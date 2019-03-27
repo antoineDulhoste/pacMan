@@ -1,10 +1,12 @@
 package application;
 
+import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
 import PathFinding.PathMap;
+import javafx.application.Platform;
 import javafx.scene.shape.Circle;
 
 public class Jeu extends Observable{
@@ -37,14 +39,53 @@ public class Jeu extends Observable{
 	public Pinky pinky;
 	
 	public int score = 0;
-	
+	Muliplayer multiplayer;
 	public PathMap pathMap;
+	
+	private boolean ready = false;
+	private boolean started = false;
 	
 	public Jeu() {
 		this.player = new PacMan(15.5, 10.5);
 		this.blinky = new Blinky(1.5, 7.5, map);
 		this.pinky = new Pinky(14.5, 2.5, map);
 		this.pathMap = new PathMap(map);
+	}
+	
+	public Jeu(Muliplayer multiplayer) {
+		this.multiplayer = multiplayer;
+		switch(multiplayer) {
+		case SERVER:
+			serverListen();
+			
+			this.player = new PacMan(15.5, 10.5);
+			this.pinky = new Pinky(14.5, 2.5, map);
+			this.blinky = new Blinky(1.5, 7.5, map);
+			
+			StringBuilder sb = new StringBuilder("0/");
+			sb.append(map.length+";");
+			sb.append(map[0].length+";");
+			for (int l = 0; l < map.length ; l++) {
+				for (int c = 0; c < map[l].length; c++) {
+					sb.append(map[l][c]+":");
+				}
+			}
+			sb.setLength(sb.length()-1);
+			sb.append(";"+player.x+";"+player.y);
+			sb.append(";"+pinky.x+";"+pinky.y);
+			sb.append(";"+blinky.x+";"+blinky.y);
+			Net.sendData(sb.toString());
+			viewCall();
+			break;
+		case CLIENT:
+			this.player = new PacMan(15.5, 10.5);
+			this.pinky = new Pinky(14.5, 2.5, map);
+			this.blinky = new Blinky(1.5, 7.5, map);
+			clientListen();
+			break;
+		case SOLO:
+			break;
+		}
 	}
 	
 	public void movePlayer(Double x, Double y) {
@@ -182,5 +223,104 @@ public class Jeu extends Observable{
 	
 	public String ClientSendData() {
 		return player.x+";"+player.y;
+	}
+	
+	private void serverListen() {
+		new Thread(new Runnable() {	
+			@Override
+			public void run() {
+				try {
+					while((Net.dis = new DataInputStream(Net.socket.getInputStream())) != null) {
+						String str = Net.dis.readUTF();
+						String packet = str.split("/")[0];
+						System.out.println("Receive Packet ["+packet+"]");
+						if( packet.equalsIgnoreCase("0") ) {
+							System.out.println("Packet 0 ignored");
+						} else if( packet.equalsIgnoreCase("1") ) {
+							System.out.println("Client ready");
+							Net.sendData("2/Start");
+							started = true;
+						} else if( packet.equalsIgnoreCase("2") ) {
+							System.out.println("Packet 2 ignored");
+						} else if( packet.equalsIgnoreCase("4") ) {
+							String[] list = str.split("/")[1].split(";");
+							pinky.x = Double.parseDouble(list[0]);
+							pinky.y = Double.parseDouble(list[1]);
+							setChanged();
+							notifyObservers("RENDEROTHER");
+						}
+						//ClientReceiveData(str);
+					}
+				}catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				
+			}
+		}).start();
+	}
+	
+	private void clientListen() {
+		new Thread(new Runnable() {	
+			@Override
+			public void run() {
+				try {
+					while((Net.dis = new DataInputStream(Net.socket.getInputStream())) != null) {
+						String str = Net.dis.readUTF();
+						String packet = str.split("/")[0];
+						System.out.println("Receive Packet ["+packet+"]");
+						if( packet.equalsIgnoreCase("0") ) {
+							String[] list = str.split("/")[1].split(";");
+							map = new int[Integer.parseInt(list[0])][Integer.parseInt(list[1])];
+							String[] vals = list[2].split(":");
+							int nbrCol = Integer.parseInt(list[1]);
+							
+							for (int l = 0; l < map.length ; l++) {
+								for (int c = 0; c < map[l].length; c++) {
+									map[l][c] = Integer.parseInt(vals[l*nbrCol+c]);
+								}
+							}
+							player.x = Double.parseDouble(list[3]);
+							player.y = Double.parseDouble(list[4]);
+							pinky.x = Double.parseDouble(list[5]);
+							pinky.y = Double.parseDouble(list[6]);
+							blinky.x = Double.parseDouble(list[7]);
+							blinky.y = Double.parseDouble(list[8]);
+							blinky.plateau = map;
+							pinky.plateau = map;
+							pathMap = new PathMap(map);
+							Net.sendData("1/Ready");
+							viewCall();
+						} else if( packet.equalsIgnoreCase("1") ) {
+							System.out.println("Packet 1 ignored");
+						} else if( packet.equalsIgnoreCase("2") ) {
+							System.out.println("Game start");
+							started = true;
+						} else if( packet.equalsIgnoreCase("4") ) {
+							String[] list = str.split("/")[1].split(";");
+							pinky.x = Double.parseDouble(list[0]);
+							pinky.y = Double.parseDouble(list[1]);
+							setChanged();
+							notifyObservers("RENDEROTHER");
+						}
+						//ClientReceiveData(str);
+					}
+				}catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				
+			}
+		}).start();
+	}
+	
+	private Jeu local = this;
+	private void viewCall() {
+		Platform.runLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				new ViewJeu(local, multiplayer);
+			}
+		});
+		
 	}
 }

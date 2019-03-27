@@ -20,6 +20,8 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.media.Media;
@@ -295,12 +297,20 @@ public class ViewJeu extends Stage{
 						root.getChildren().add(gum);
 					}
 				}
+				boolean skip = false;
+				if( arg instanceof String) {
+					String str = (String) arg;
+					if (str.equals("RENDEROTHER")) {
+						renderOtherNET();
+						skip = true;
+					}
+				}
+				if(skip) return;
 				try {
 					if(muliplayer == Muliplayer.SERVER) {
-						sendData(jeu.ServerSendData());
+						Net.sendData("4/"+jeu.ServerSendData());
 					}else if (muliplayer == Muliplayer.CLIENT) {
-						System.out.println("Send to Server");
-						sendData(jeu.ClientSendData());
+						Net.sendData("4/"+jeu.ClientSendData());
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -311,6 +321,20 @@ public class ViewJeu extends Stage{
 		
 		addCoins();
 		//setFirstPlan();
+		
+		String imageURI = new File("icone.png").toURI().toString(); 
+		Image image = new Image(imageURI);
+		scene.addEventFilter(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
+			private boolean b=true;
+			@Override
+			public void handle(KeyEvent event) {
+				if(event.getCode() == KeyCode.ESCAPE && b==true){
+					b=false;
+					close();
+					new Menu();
+				}
+			}
+		});
 	}
 	
 	private void addCoins() {
@@ -417,7 +441,6 @@ public class ViewJeu extends Stage{
 	
 	private void renderPlayerNET() {
 		Platform.runLater(new Runnable(){
-		
 			@Override
 			public void run() {
 				root.getChildren().remove(player);

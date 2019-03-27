@@ -2,7 +2,7 @@ package application;
 
 public abstract class Ghost extends Entite implements Runnable {
 
-	private int[][] plateau;
+	public  int[][] plateau;
 	
 	public Ghost(double x, double y, int[][] plateau) {
 		super(x, y);
