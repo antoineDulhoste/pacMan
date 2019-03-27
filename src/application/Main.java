@@ -1,5 +1,8 @@
 package application;
 	
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 import PathFinding.PathMap;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -36,20 +39,29 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		try {
 			Jeu jeu = new Jeu();
-			ViewJeu vj = new ViewJeu(jeu);
+			try {
+				BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
+				String line = bf.readLine();
+				if( line.equalsIgnoreCase("Server")) {
+					ViewJeu vj = new ViewJeu(jeu, Muliplayer.SERVER);
+				} else if( line.equalsIgnoreCase("Client")) {
+					ViewJeu vj = new ViewJeu(jeu, Muliplayer.CLIENT);
+				} else {
+					ViewJeu vj = new ViewJeu(jeu, Muliplayer.SOLO);
+				}
+			}catch(Exception ex) {
+				ex.printStackTrace();
+			}
+			
+			
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
 	public static void main(String[] args) {
-		
-		PathMap path = new PathMap(map);
-		path.print();
-		System.out.println();
-		path.printMap(path.findPath(1, 2, 5, 18));
-		
 		launch(args);
-		
 	}
+	
+	
 }

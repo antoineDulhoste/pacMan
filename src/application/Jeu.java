@@ -1,8 +1,13 @@
 package application;
 
-import PathFinding.PathMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
 
-public class Jeu {
+import PathFinding.PathMap;
+import javafx.scene.shape.Circle;
+
+public class Jeu extends Observable{
 	
 	public int[][] map = {  { 8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8}, 
 							{ 8, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8}, 
@@ -31,6 +36,8 @@ public class Jeu {
 	public Blinky blinky;
 	public Pinky pinky;
 	
+	public int score = 0;
+	
 	public PathMap pathMap;
 	
 	public Jeu() {
@@ -38,6 +45,38 @@ public class Jeu {
 		this.blinky = new Blinky(1.5, 7.5, map);
 		this.pinky = new Pinky(14.5, 2.5, map);
 		this.pathMap = new PathMap(map);
+	}
+	
+	public void movePlayer(Double x, Double y) {
+		this.player.x = x;
+		this.player.y = y;
+		setChanged();
+		notifyObservers();
+	}
+	
+	public void movePlayerX(Double x) {
+		this.player.x += x;
+		setChanged();
+		notifyObservers();
+	}
+	public void movePlayerY(Double y) {
+		this.player.y += y;
+		setChanged();
+		notifyObservers();
+	}
+	
+	public List<Gum> gums = new ArrayList<>();
+	public void addGum(Gum gum) {
+		this.gums.add(gum);
+		setChanged();
+		notifyObservers(gum);
+	}
+	
+	public void removeGum(Gum gum) {
+		score += gum.getValue();
+		gums.remove(gum);
+		setChanged();
+		notifyObservers(gum);
 	}
 	
 	public boolean canMoveVertically(Double addY) {
@@ -100,5 +139,48 @@ public class Jeu {
 				}
 			}
 		}
+	}
+	
+	/* MULTIPLAYER */
+	/*
+	 * Server = PacMan;
+	 * Client = Ghost;
+	 * 
+	 * Packet 0 : Wait
+	 * Packet 1 : Start
+	 * Packet 2 : End (Gagnant + Score PacMan)
+	 * Packet 3 : Move
+	 * Packet 4 : Exit
+	 * 
+	 * Packet Server: 
+	 * 	- Player X
+	 * 	- Player Y
+	 * 
+	 * Packet Client:
+	 *  - Ghost X
+	 *  - Ghost Y
+	 */
+	public void ServerReceiveData(String str) {
+		String[] list = str.split(";");
+		pinky.x = Double.parseDouble(list[0]);
+		pinky.y = Double.parseDouble(list[1]);
+		setChanged();
+		notifyObservers();
+	}
+	
+	public String ServerSendData() {
+		return player.x+";"+player.y;
+	}
+	
+	public void ClientReceiveData(String str) {
+		String[] list = str.split(";");
+		player.x = Double.parseDouble(list[0]);
+		player.y = Double.parseDouble(list[1]);
+		setChanged();
+		notifyObservers();
+	}
+	
+	public String ClientSendData() {
+		return player.x+";"+player.y;
 	}
 }
