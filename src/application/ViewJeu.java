@@ -13,6 +13,7 @@ import javafx.animation.Timeline;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.media.Media;
@@ -217,7 +218,9 @@ public class ViewJeu extends Stage{
         	);
 		timelineDeplacements.setCycleCount( Animation.INDEFINITE );
 		timelineDeplacements.play();
-        
+		String imageURI = new File("icone.png").toURI().toString(); 
+        Image image = new Image(imageURI);
+        this.getIcons().add(image);
 		this.setTitle("PacMan");
 		this.setScene(scene);
 		this.show();

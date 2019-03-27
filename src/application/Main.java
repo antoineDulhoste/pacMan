@@ -34,19 +34,18 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) {
-		try {
+		new Menu();
+		/*try {
 			Jeu jeu = new Jeu();
 			ViewJeu vj = new ViewJeu(jeu);
 		} catch(Exception e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 	
 	public static void main(String[] args) {
 		
 		PathMap path = new PathMap(map);
-		path.print();
-		System.out.println();
 		path.printMap(path.findPath(1, 2, 5, 18));
 		
 		launch(args);
