@@ -14,7 +14,9 @@ import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -220,6 +222,17 @@ public class ViewJeu extends Stage{
 		timelineDeplacements.play();
 		String imageURI = new File("icone.png").toURI().toString(); 
         Image image = new Image(imageURI);
+        scene.addEventFilter(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
+            private boolean b=true;
+            @Override
+            public void handle(KeyEvent event) {
+            	if(event.getCode() == KeyCode.ESCAPE && b==true){
+                    b=false;
+                    close();
+                    new Menu();
+                }
+            }
+        });
         this.getIcons().add(image);
 		this.setTitle("PacMan");
 		this.setScene(scene);
