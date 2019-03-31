@@ -59,10 +59,12 @@ public class ViewJeu extends Stage{
 	Thread TMusique;
 	Timeline timelineDeplacements;
 	Timeline wallAnimation;
+	Timeline timelineGameOver;
 	
 	Muliplayer muliplayer;
 	
 	public ViewJeu(Jeu jeu, Muliplayer muliplayer) {
+		Main.menu.close();
 		this.jeu = jeu;
 		this.muliplayer = muliplayer;
 		try {
@@ -83,17 +85,17 @@ public class ViewJeu extends Stage{
 	private void start() {
 		/* Creation de la scene a la taille de la map avec le fond noir */
 		//if(scene == null)
-		scene = new Scene(root, jeu.map[0].length*jeu.size*MULTI, jeu.map.length*jeu.size*MULTI, Color.BLACK);
+		scene = new Scene(root, jeu.level.map[0].length*jeu.size*MULTI, jeu.level.map.length*jeu.size*MULTI, Color.BLACK);
 		
 		/** On construit le plateau de jeu **/
-		for(int l = 0; l<jeu.map.length; l++) {
-			for (int c = 0; c<jeu.map[l].length; c++) {				
+		for(int l = 0; l<jeu.level.map.length; l++) {
+			for (int c = 0; c<jeu.level.map[l].length; c++) {				
 				Rectangle rect = new Rectangle(c*jeu.size*MULTI, l*jeu.size*MULTI, jeu.size*MULTI, jeu.size*MULTI);
-				if(jeu.map[l][c] == 1 ) {
+				if(jeu.level.map[l][c] == 1 ) {
 					rect.setFill(Color.BLUE);
 					walls.add(rect);
-				}else if(jeu.map[l][c] == 2 ) {
-					rect.setFill(Color.GREEN);
+				}else if(jeu.level.map[l][c] == 2 ) {
+					rect.setFill(Color.BLACK);
 				}else {
 					rect.setFill(Color.BLACK);
 					paths.put(l+";"+c, rect);
@@ -125,7 +127,13 @@ public class ViewJeu extends Stage{
                     case DOWN:  jeu.player.dirWanted = 2; break;
                     case LEFT:  jeu.player.dirWanted = 1; break;
                     case RIGHT: jeu.player.dirWanted = 3; break; 
-                    case ENTER: GameOver();break;
+                    case ENTER: GameOver(); 
+                    			if(jeu.multiplayer == Muliplayer.SERVER) {
+                    				Net.sendData("3/GHOST");
+                    			} else if(jeu.multiplayer == Muliplayer.CLIENT) {
+                    				Net.sendData("3/PACMAN");
+                    			}
+                    			break;
                     case SPACE: showPath(); break;
             	}
             }
@@ -155,10 +163,13 @@ public class ViewJeu extends Stage{
                     }
                     
                 }
-                if(jeu.gums.isEmpty()) GameOver();
+                if(jeu.gums.isEmpty()) {
+                	if(jeu.multiplayer == Muliplayer.SERVER) Net.sendData("3/PACMAN");
+                	GameOver();
+                }
             }
         };
-        if(muliplayer != muliplayer.CLIENT) ATCoins.start();
+        //if(muliplayer != muliplayer.CLIENT) ATCoins.start();
         
         TMusique = new Thread(new Runnable() {
 			@Override
@@ -196,21 +207,18 @@ public class ViewJeu extends Stage{
         	            	boolean moved = false;
         	            	if(!newY.equals(0.0)) {
         	            		if(jeu.canMoveVertically(newY)) {
-        	            			//jeu.player.y += newY;
         	            			jeu.movePlayerY(newY);
         	            			moved = true;
         	            		}
         	            	}    
         	            	if(!newX.equals(0.0)) {
         	            		if(jeu.canMoveHorizontally(newX)) {
-        	            			//jeu.player.x += newX;
         	            			jeu.movePlayerX(newX);
         	            			moved = true;
         	            		}
         	            	}
         	            	if(moved) {
         	            		jeu.player.dir = jeu.player.dirWanted;
-        	            		//renderPlayer();
         	            	} else {
         	            		newX = 0.0;
         		            	newY = 0.0;
@@ -226,20 +234,16 @@ public class ViewJeu extends Stage{
         		            	moved = false;
         		            	if(!newY.equals(0.0)) {
         		            		if(jeu.canMoveVertically(newY)) {
-        		            			//jeu.player.y += newY;
         		            			jeu.movePlayerY(newY);
         		            			moved = true;
         		            		}
         		            	}    
         		            	if(!newX.equals(0.0)) {
         		            		if(jeu.canMoveHorizontally(newX)) {
-        		            			//jeu.player.x += newX;
         		            			jeu.movePlayerX(newX);
         		            			moved = true;
         		            		}
         		            	}
-        		            	//if(moved) renderPlayer();
-        		            	//renderGhost();
         	            	}
             	        }
             	    )
@@ -279,6 +283,39 @@ public class ViewJeu extends Stage{
 		wallAnimation.setCycleCount( Animation.INDEFINITE );
 		//wallAnimation.play();
 		
+		timelineGameOver = new Timeline(
+	        	    new KeyFrame(
+	        	        Duration.millis( 20 ),
+	        	        event -> {
+	        	        	Shape intersectBlinky = Shape.intersect(player, blinky);
+	                        if(intersectBlinky.getBoundsInLocal().getWidth() != -1)
+	                        {
+	                        	Platform.runLater(new Runnable() {		
+									@Override
+									public void run() {
+										if(jeu.multiplayer == Muliplayer.SERVER) Net.sendData("3/BLINKY");
+										GameOver();		
+									}
+								});
+	                        }
+	                        
+	                        Shape intersectPinky = Shape.intersect(player, pinky);
+	                        if(intersectPinky.getBoundsInLocal().getWidth() != -1)
+	                        {
+	                        	Platform.runLater(new Runnable() {		
+									@Override
+									public void run() {
+										if(jeu.multiplayer == Muliplayer.SERVER) Net.sendData("3/BLINKY");
+										GameOver();		
+									}
+								});
+	                        }
+	        	        }
+	        	    )
+	        	);
+		timelineGameOver.setCycleCount( Animation.INDEFINITE );
+		if(jeu.multiplayer != Muliplayer.CLIENT) timelineGameOver.play();
+		
 		this.setTitle("PacMan");
 		this.setScene(scene);
 		this.show();
@@ -287,21 +324,35 @@ public class ViewJeu extends Stage{
 			
 			@Override
 			public void update(Observable o, Object arg) {
+				boolean skip = false;
 				renderPlayer();
 				renderGhost();
 				if( arg instanceof Gum ) {
 					Gum gum = (Gum) arg;
 					if ( root.getChildren().contains(gum)) {
 						root.getChildren().remove(gum);
+						skip = true;
 					} else {
 						root.getChildren().add(gum);
+						skip = true;
 					}
 				}
-				boolean skip = false;
+				
 				if( arg instanceof String) {
 					String str = (String) arg;
 					if (str.equals("RENDEROTHER")) {
 						renderOtherNET();
+						skip = true;
+					}
+					if (str.equals("GAMEOVER")) {
+						Platform.runLater(new Runnable() {
+							
+							@Override
+							public void run() {
+								GameOver();
+							}
+						});
+						
 						skip = true;
 					}
 				}
@@ -319,8 +370,7 @@ public class ViewJeu extends Stage{
 			}
 		});
 		
-		addCoins();
-		//setFirstPlan();
+		if(jeu.multiplayer != Muliplayer.CLIENT) addCoins();
 		
 		String imageURI = new File("icone.png").toURI().toString(); 
 		Image image = new Image(imageURI);
@@ -338,9 +388,9 @@ public class ViewJeu extends Stage{
 	}
 	
 	private void addCoins() {
-		for(int l = 0; l<jeu.map.length; l++) {
-			for (int c = 0; c<jeu.map[l].length; c++) {
-				if(jeu.map[l][c] == 0) {
+		for(int l = 0; l<jeu.level.map.length; l++) {
+			for (int c = 0; c<jeu.level.map[l].length; c++) {
+				if(jeu.level.map[l][c] == 0) {
 					Gum gum = new Gum(c*16*MULTI+(16/2*MULTI), l*16*MULTI+(16/2*MULTI), 2*MULTI, 1);
 					jeu.addGum(gum);
 				}
@@ -360,10 +410,12 @@ public class ViewJeu extends Stage{
 	private void startAllThread() {
 		ATCoins.start();
 		timelineDeplacements.play();
+		timelineGameOver.play();
 	}
 	
 	private void stopAllThread() {
 		ATCoins.stop();
+		timelineGameOver.stop();
 		timelineDeplacements.stop();
 	}
 	
@@ -379,7 +431,7 @@ public class ViewJeu extends Stage{
 	        	        event -> {
 	        	        	for(Rectangle r : walls) {
 	        	    			r.setY(r.getY()+10);
-	        	    			if(r.getY() > jeu.map.length*16*MULTI + 16) {
+	        	    			if(r.getY() > jeu.level.map.length*16*MULTI + 16) {
 	        	    				root.getChildren().remove(r);	        	    				
 	        	    			}
 	        	    		}
@@ -424,7 +476,7 @@ public class ViewJeu extends Stage{
 	        	 	    new KeyFrame(
 	        	 	        Duration.seconds(5),
 	        	 	        event -> {
-	        	 	        	this.jeu = new Jeu();
+	        	 	        	//this.jeu = new Jeu();
 	        	 	        	root.getChildren().clear();
 	        	 	        	start();
 	        	 	        	timeline.stop();

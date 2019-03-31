@@ -11,28 +11,7 @@ import javafx.scene.shape.Circle;
 
 public class Jeu extends Observable{
 	
-	public int[][] map = {  { 8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8}, 
-							{ 8, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8}, 
-							{ 8, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 8}, 
-							{ 8, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8},							
-							{ 8, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 8}, 							
-							{ 8, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 8},						
-							{ 8, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 8}, 							
-							{ 8, 8, 8, 8, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 8, 8, 8, 8},							
-							{ 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1}, 						
-							{69, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,69},						
-							{ 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1},							
-							{ 8, 8, 8, 8, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 8, 8, 8, 8},					
-							{ 8, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 8}, 						
-							{ 8, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8}, 					
-							{ 8, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 8}, 							
-							{ 8, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 8},
-							{ 8, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 8},
-							{ 8, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 8},								
-							{ 8, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 8},
-							{ 8, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8}, 
-							{ 8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8}
-						 };
+	public Level level;
 	public final int size = 16;
 	public PacMan player;
 	public Blinky blinky;
@@ -45,45 +24,35 @@ public class Jeu extends Observable{
 	private boolean ready = false;
 	private boolean started = false;
 	
-	public Jeu() {
-		this.player = new PacMan(15.5, 10.5);
-		this.blinky = new Blinky(1.5, 7.5, map);
-		this.pinky = new Pinky(14.5, 2.5, map);
-		this.pathMap = new PathMap(map);
-	}
-	
-	public Jeu(Muliplayer multiplayer) {
+	public Jeu(Muliplayer multiplayer, Level level) {
 		this.multiplayer = multiplayer;
 		switch(multiplayer) {
 		case SERVER:
+			this.level = level;
 			serverListen();
 			
-			this.player = new PacMan(15.5, 10.5);
-			this.pinky = new Pinky(14.5, 2.5, map);
-			this.blinky = new Blinky(1.5, 7.5, map);
+			this.player = new PacMan(level.getPlayerX()+0.5, level.getPlayerY()+0.5);
+			this.pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, level.getMap());
+			this.blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, level.getMap());
+			this.pathMap = new PathMap(level.map);
+			Net.sendData(level.netToString());
 			
-			StringBuilder sb = new StringBuilder("0/");
-			sb.append(map.length+";");
-			sb.append(map[0].length+";");
-			for (int l = 0; l < map.length ; l++) {
-				for (int c = 0; c < map[l].length; c++) {
-					sb.append(map[l][c]+":");
-				}
-			}
-			sb.setLength(sb.length()-1);
-			sb.append(";"+player.x+";"+player.y);
-			sb.append(";"+pinky.x+";"+pinky.y);
-			sb.append(";"+blinky.x+";"+blinky.y);
-			Net.sendData(sb.toString());
 			viewCall();
 			break;
 		case CLIENT:
-			this.player = new PacMan(15.5, 10.5);
-			this.pinky = new Pinky(14.5, 2.5, map);
-			this.blinky = new Blinky(1.5, 7.5, map);
+			this.player = new PacMan(0.0, 0.0);
+			this.pinky = new Pinky(0.0, 0.0, null);
+			this.blinky = new Blinky(0.0, 0.0, null);
 			clientListen();
 			break;
 		case SOLO:
+			this.level = level;
+			
+			this.player = new PacMan(level.getPlayerX()+0.5, level.getPlayerY()+0.5);
+			this.pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, level.getMap());
+			this.blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, level.getMap());
+			this.pathMap = new PathMap(level.map);
+			viewCall();
 			break;
 		}
 	}
@@ -124,21 +93,21 @@ public class Jeu extends Observable{
 		if(addY > 0) {
 			Double y = player.y + 0.495;
 			y+=addY;
-			if(map[player.x.intValue()][y.intValue()] == 1) return false;
+			if(level.map[player.x.intValue()][y.intValue()] == 1) return false;
 			Double topLeft = player.x - 0.495;
-			if(map[topLeft.intValue()][y.intValue()] == 1) return false;
+			if(level.map[topLeft.intValue()][y.intValue()] == 1) return false;
 			Double topRight = player.x + 0.495;
-			if(map[topRight.intValue()][y.intValue()] == 1) return false;
-			if(map[player.x.intValue()][y.intValue()] >= 50) teleport(map[player.x.intValue()][y.intValue()], player.x.intValue(), y.intValue());
+			if(level.map[topRight.intValue()][y.intValue()] == 1) return false;
+			if(level.map[player.x.intValue()][y.intValue()] >= 50) teleport(level.map[player.x.intValue()][y.intValue()], player.x.intValue(), y.intValue());
 		}else {
 			Double y = player.y - 0.495;
 			y+=addY;
-			if(map[player.x.intValue()][y.intValue()] == 1) return false;
+			if(level.map[player.x.intValue()][y.intValue()] == 1) return false;
 			Double topLeft = player.x - 0.495;
-			if(map[topLeft.intValue()][y.intValue()] == 1) return false;
+			if(level.map[topLeft.intValue()][y.intValue()] == 1) return false;
 			Double topRight = player.x + 0.495;
-			if(map[topRight.intValue()][y.intValue()] == 1) return false;
-			if(map[player.x.intValue()][y.intValue()] >= 50) teleport(map[player.x.intValue()][y.intValue()], player.x.intValue(), y.intValue());
+			if(level.map[topRight.intValue()][y.intValue()] == 1) return false;
+			if(level.map[player.x.intValue()][y.intValue()] >= 50) teleport(level.map[player.x.intValue()][y.intValue()], player.x.intValue(), y.intValue());
 		}
 		return true;
 	}
@@ -149,31 +118,31 @@ public class Jeu extends Observable{
 		if(addX > 0) {
 			Double x = player.x + 0.495;
 			x+=addX;
-			if(map[x.intValue()][player.y.intValue()] == 1) sortie = false;
+			if(level.map[x.intValue()][player.y.intValue()] == 1) sortie = false;
 			Double topLeft = player.y - 0.495;
-			if(map[x.intValue()][topLeft.intValue()] == 1) sortie = false;
+			if(level.map[x.intValue()][topLeft.intValue()] == 1) sortie = false;
 			Double topRight = player.y + 0.495;
-			if(map[x.intValue()][topRight.intValue()] == 1) sortie = false;
-			if(map[x.intValue()][player.y.intValue()] >= 50) teleport(map[x.intValue()][player.y.intValue()], x.intValue(), player.y.intValue());
+			if(level.map[x.intValue()][topRight.intValue()] == 1) sortie = false;
+			if(level.map[x.intValue()][player.y.intValue()] >= 50) teleport(level.map[x.intValue()][player.y.intValue()], x.intValue(), player.y.intValue());
 		}else {
 			Double x = (Double)player.x - 0.495;
 			x+=addX;
-			if(map[x.intValue()][player.y.intValue()] == 1) sortie = false;
+			if(level.map[x.intValue()][player.y.intValue()] == 1) sortie = false;
 			Double topLeft = player.y - 0.495;
-			if(map[x.intValue()][topLeft.intValue()] == 1) sortie = false;
+			if(level.map[x.intValue()][topLeft.intValue()] == 1) sortie = false;
 			Double topRight = player.y + 0.495;
-			if(map[x.intValue()][topRight.intValue()] == 1) sortie = false;
+			if(level.map[x.intValue()][topRight.intValue()] == 1) sortie = false;
 			
-			if(map[x.intValue()][player.y.intValue()] >= 50) teleport(map[x.intValue()][player.y.intValue()], x.intValue(), player.y.intValue());
+			if(level.map[x.intValue()][player.y.intValue()] >= 50) teleport(level.map[x.intValue()][player.y.intValue()], x.intValue(), player.y.intValue());
 		}
 		return sortie;
 	}
 	
 	public void teleport(int id, int x, int y) {
 		System.out.println("TELEPORT EXCEPT "+x+" "+y);
-		for(int i=0; i<map.length; i++) {
-			for(int j=0; j<map[i].length; j++) {
-				if(map[i][j] == id && (i != x || j != y)) {
+		for(int i=0; i<level.map.length; i++) {
+			for(int j=0; j<level.map[i].length; j++) {
+				if(level.map[i][j] == id && (i != x || j != y)) {
 					System.out.println("find "+i+" "+j);
 					player.x = i+0.5;
 					player.y = j+0.5;
@@ -242,6 +211,11 @@ public class Jeu extends Observable{
 							started = true;
 						} else if( packet.equalsIgnoreCase("2") ) {
 							System.out.println("Packet 2 ignored");
+						} else if( packet.equalsIgnoreCase("3") ) {
+							System.out.println("Client end game. Winner : "+packet);
+							started = false;
+							setChanged();
+							notifyObservers("GAMEOVER");
 						} else if( packet.equalsIgnoreCase("4") ) {
 							String[] list = str.split("/")[1].split(";");
 							pinky.x = Double.parseDouble(list[0]);
@@ -249,12 +223,10 @@ public class Jeu extends Observable{
 							setChanged();
 							notifyObservers("RENDEROTHER");
 						}
-						//ClientReceiveData(str);
 					}
 				}catch (Exception ex) {
 					ex.printStackTrace();
-				}
-				
+				}	
 			}
 		}).start();
 	}
@@ -269,25 +241,12 @@ public class Jeu extends Observable{
 						String packet = str.split("/")[0];
 						System.out.println("Receive Packet ["+packet+"]");
 						if( packet.equalsIgnoreCase("0") ) {
-							String[] list = str.split("/")[1].split(";");
-							map = new int[Integer.parseInt(list[0])][Integer.parseInt(list[1])];
-							String[] vals = list[2].split(":");
-							int nbrCol = Integer.parseInt(list[1]);
+							level = new Level(str);
 							
-							for (int l = 0; l < map.length ; l++) {
-								for (int c = 0; c < map[l].length; c++) {
-									map[l][c] = Integer.parseInt(vals[l*nbrCol+c]);
-								}
-							}
-							player.x = Double.parseDouble(list[3]);
-							player.y = Double.parseDouble(list[4]);
-							pinky.x = Double.parseDouble(list[5]);
-							pinky.y = Double.parseDouble(list[6]);
-							blinky.x = Double.parseDouble(list[7]);
-							blinky.y = Double.parseDouble(list[8]);
-							blinky.plateau = map;
-							pinky.plateau = map;
-							pathMap = new PathMap(map);
+							player = new PacMan(level.getPlayerX()+0.5, level.getPlayerY()+0.5);
+							pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, level.getMap());
+							blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, level.getMap());
+							pathMap = new PathMap(level.map);
 							Net.sendData("1/Ready");
 							viewCall();
 						} else if( packet.equalsIgnoreCase("1") ) {
@@ -295,6 +254,11 @@ public class Jeu extends Observable{
 						} else if( packet.equalsIgnoreCase("2") ) {
 							System.out.println("Game start");
 							started = true;
+						} else if( packet.equalsIgnoreCase("3") ) {
+							System.out.println("Serv end game. Winner : "+packet);
+							started = false;
+							setChanged();
+							notifyObservers("GAMEOVER");
 						} else if( packet.equalsIgnoreCase("4") ) {
 							String[] list = str.split("/")[1].split(";");
 							pinky.x = Double.parseDouble(list[0]);
@@ -302,7 +266,6 @@ public class Jeu extends Observable{
 							setChanged();
 							notifyObservers("RENDEROTHER");
 						}
-						//ClientReceiveData(str);
 					}
 				}catch (Exception ex) {
 					ex.printStackTrace();

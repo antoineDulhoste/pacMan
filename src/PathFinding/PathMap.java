@@ -20,7 +20,7 @@ public class PathMap {
 		{
 			for (int y = 0; y < height; y++)
 			{
-				nodes[x][y] = new Node(x, y, (map[x][y] == 0 || map[x][y] > 50));
+				nodes[x][y] = new Node(x, y, ((map[x][y] == 0 || map[x][y] == 2 )|| map[x][y] > 50));
 			}
 		}
 		/* On ferme les bordures de la map */

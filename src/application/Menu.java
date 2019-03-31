@@ -2,14 +2,18 @@ package application;
 
 
 import java.io.File;
+import java.util.Optional;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -93,7 +97,6 @@ public class Menu extends Stage {
 		this.show();
 	}
 	
-	
 	public void menuMulti() {
 		Text t1 = new Text();
         t1.setText("server");
@@ -106,7 +109,8 @@ public class Menu extends Stage {
             @Override
             public void handle(MouseEvent event) {
             	System.out.println("Start PacMan MULTI: SERVER");
-            	Net.startServer();
+            	Net.startServer(7778);
+            	
             }
         });
         root.getChildren().add(t1);
@@ -143,12 +147,24 @@ public class Menu extends Stage {
             public void handle(MouseEvent event) {
             	close();
             	try {
-        			Jeu jeu = new Jeu();
-        			System.out.println("Start PacMan SOLO");
-        			new ViewJeu(jeu, Muliplayer.SOLO);
+            		Level level;
+            		ChoiceDialog<Level> dialog = new ChoiceDialog<>(Level.levels.get(0), Level.levels);
+					dialog.setTitle("Choisir un niveau");
+					dialog.setHeaderText("Look, a Choice Dialog");
+					dialog.setContentText("Choose your letter:");
+
+					// Traditional way to get the response value.
+					Optional<Level> result = dialog.showAndWait();
+					if (result.isPresent()){
+						level = result.get();
+					    System.out.println("Level ("+level.getName()+") OK");
+					    Jeu jeu = new Jeu(Muliplayer.SOLO, level);
+					}
         		} catch(Exception e) {
         			e.printStackTrace();
         		}
+            	
+            	
             }
         });
         root.getChildren().add(t1);
@@ -166,7 +182,6 @@ public class Menu extends Stage {
             	setCompteur(2);
             	menuRemove(3);
             	menuMulti();
-            	
             }
         });
         root.getChildren().add(t2);
@@ -187,6 +202,55 @@ public class Menu extends Stage {
         root.getChildren().add(t3);
     }
 	
+	public void menuConfigServer() {
+		Text t1 = new Text();
+        t1.setText("PORT:");
+        t1.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
+        t1.setX(130);
+        t1.setY(500);
+        t1.setFill(Color.WHITE);
+        root.getChildren().add(t1);
+        
+        TextField port = new TextField ();
+        port.setLayoutX(285);
+        port.setLayoutY(460);
+        port.setStyle("-fx-text-fill: white; -fx-background-color: black; -fx-border-color:white; -fx-border-radius:5px; -fx-font-family:'Comic Sans MS';-fx-font-size:20");
+        root.getChildren().add(port);
+        
+        Text t2 = new Text();
+        t2.setText("CARTE:");
+        t2.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
+        t2.setX(130);
+        t2.setY(570);
+        t2.setFill(Color.WHITE);
+        root.getChildren().add(t2);
+        
+        ComboBox<Level> levels = new ComboBox<>(FXCollections.observableArrayList(Level.levels));
+        levels.setLayoutX(285);
+        levels.setLayoutY(530);      
+        levels.setStyle("-fx-text-fill: white; -fx-background-color: black; -fx-border-color:white; -fx-border-radius:5px; -fx-font-family:'Comic Sans MS';-fx-font-size:20");
+        root.getChildren().add(levels);
+        
+        Text t3 = new Text();
+        t3.setText("VALIDER");
+        t3.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
+        t3.setX(130);
+        t3.setY(550);
+        t3.setFill(Color.WHITE);
+        t3.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+            	try {
+            		System.out.println("PACMAN SERVER:\nPORT: "+Integer.parseInt(t1.getText())+"\nLEVEL: "+levels.getValue().getName());
+                	Net.startServer(Integer.parseInt(t1.getText()));
+            	}catch(Exception ex) {
+            		
+            	}
+            }
+        });
+        root.getChildren().add(t3);
+	}
+
 	public void actionConnect() {
 		Text t1 = new Text();
         t1.setText("IP:");

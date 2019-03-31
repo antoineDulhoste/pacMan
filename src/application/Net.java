@@ -5,6 +5,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Optional;
+
+import javafx.application.Platform;
+import javafx.scene.control.ChoiceDialog;
 
 public class Net {
 	
@@ -31,6 +35,9 @@ public class Net {
 	 * - double blinkyY
 	 * - double pinkyX
 	 * - double pinkyY
+	 * 
+	 * Packet 3 : End
+	 * - String winner
 	 */
 	public static void sendData(String str) {
 		try {
@@ -40,23 +47,51 @@ public class Net {
 			e.printStackTrace();
 		}
 	}
-	
-	public static void startServer() {
+	static Level level = null;
+	public static void startServer(int port) {
+		
 		try {
 			System.out.println("Starting Server ...");
-			serverSocket = new ServerSocket(7778);
-			System.out.println("Server Started\nWaiting for connection ...");
-			socket = serverSocket.accept();
-			System.out.println("Connection from: "+ socket.getInetAddress());
+			serverSocket = new ServerSocket(port);
+			System.out.println("Server Started\nWaiting for level ...");
 			
-			dis = new DataInputStream(socket.getInputStream());	
+			/** Ask for Level **/
+			Platform.runLater(new Runnable() {
+				
+				@Override
+				public void run() {
+					try {
+						ChoiceDialog<Level> dialog = new ChoiceDialog<>(Level.levels.get(0), Level.levels);
+						dialog.setTitle("Choisir un niveau");
+						dialog.setHeaderText("Look, a Choice Dialog");
+						dialog.setContentText("Choose your letter:");
+
+						// Traditional way to get the response value.
+						Optional<Level> result = dialog.showAndWait();
+						if (result.isPresent()){
+							level = result.get();
+						    System.out.println("Level ("+level.getName()+") OK");
+						    System.out.println("Waiting for connection ...");
+						    socket = serverSocket.accept();
+							System.out.println("Connection from: "+ socket.getInetAddress());
+							
+							dis = new DataInputStream(socket.getInputStream());	
+							if (dis != null && level != null) {
+								System.out.println("Server started\nClient connected\nSending game infos");
+								new Jeu(Muliplayer.SERVER, level);
+							}
+						}	
+					}catch (Exception ex) {
+						ex.printStackTrace();
+					}
+					
+				}
+			});
+			
 		}catch(Exception ex) {
 			
 		}
-		if (dis != null) {
-			System.out.println("Server started\nClient connected\nSending game infos");
-			new Jeu(Muliplayer.SERVER);
-		}
+		
 		
 	}
 
@@ -70,7 +105,7 @@ public class Net {
 		}
 		if (dis != null) {
 			System.out.println("Client started\nConnexion valid\nWaiting for Game infos");
-			new Jeu(Muliplayer.CLIENT);
+			new Jeu(Muliplayer.CLIENT, null);
 		}
 		
 	}
