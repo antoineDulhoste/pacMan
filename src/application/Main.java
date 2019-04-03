@@ -18,7 +18,7 @@ public class Main extends Application {
 	}
 	
 	public static void main(String[] args) {
-		Level.clear();
+		Level.loadLevels();
 		launch(args);
 	}
 	
