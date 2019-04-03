@@ -56,6 +56,19 @@ public class Jeu extends Observable{
 			break;
 		}
 	}
+	public void moveBlinky(Double x, Double y) {
+		this.blinky.x = x;
+		this.blinky.y = y;
+		setChanged();
+		notifyObservers("BLINKY");
+	}
+	
+	public void movePinky(Double x, Double y) {
+		this.pinky.x = x;
+		this.pinky.y = y;
+		setChanged();
+		notifyObservers("PINKY");
+	}
 	
 	public void movePlayer(Double x, Double y) {
 		this.player.x = x;
@@ -263,6 +276,12 @@ public class Jeu extends Observable{
 							String[] list = str.split("/")[1].split(";");
 							pinky.x = Double.parseDouble(list[0]);
 							pinky.y = Double.parseDouble(list[1]);
+							setChanged();
+							notifyObservers("RENDEROTHER");
+						} else if( packet.equalsIgnoreCase("5") ) {
+							String[] list = str.split("/")[1].split(";");
+							blinky.x = Double.parseDouble(list[0]);
+							blinky.y = Double.parseDouble(list[1]);
 							setChanged();
 							notifyObservers("RENDEROTHER");
 						}

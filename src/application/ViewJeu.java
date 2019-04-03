@@ -104,8 +104,6 @@ public class ViewJeu extends Stage{
 			}
 		}
 		
-		
-		
 		/*Dessine le joueur*/
 		player = new Circle(jeu.player.y*jeu.player.size*MULTI, jeu.player.x*jeu.player.size*MULTI, jeu.player.rayon*MULTI);
 		player.setFill(Color.YELLOW);
@@ -169,7 +167,7 @@ public class ViewJeu extends Stage{
                 }
             }
         };
-        //if(muliplayer != muliplayer.CLIENT) ATCoins.start();
+        if(muliplayer != muliplayer.CLIENT) ATCoins.start();
         
         TMusique = new Thread(new Runnable() {
 			@Override
@@ -326,7 +324,7 @@ public class ViewJeu extends Stage{
 			public void update(Observable o, Object arg) {
 				boolean skip = false;
 				renderPlayer();
-				renderGhost();
+				//renderGhost();
 				if( arg instanceof Gum ) {
 					Gum gum = (Gum) arg;
 					if ( root.getChildren().contains(gum)) {
@@ -342,6 +340,14 @@ public class ViewJeu extends Stage{
 					String str = (String) arg;
 					if (str.equals("RENDEROTHER")) {
 						renderOtherNET();
+						skip = true;
+					}
+					if (str.equals("BLINKY")) {
+						renderBlinky();
+						skip = true;
+					}
+					if (str.equals("PINKY")) {
+						renderPinky();
 						skip = true;
 					}
 					if (str.equals("GAMEOVER")) {
@@ -420,7 +426,6 @@ public class ViewJeu extends Stage{
 	}
 	
 	private void GameOver() {
-		 
 		 stopAllThread();
 		 for(Rectangle r : paths.values()) root.getChildren().remove(r);
 		 for(Gum c : jeu.gums) root.getChildren().remove(c);
@@ -512,10 +517,27 @@ public class ViewJeu extends Stage{
 				pinky = new Circle(jeu.pinky.y*jeu.pinky.size*MULTI, jeu.pinky.x*jeu.pinky.size*MULTI, jeu.pinky.rayon*MULTI);
 				pinky.setFill(Color.DEEPPINK);
 				root.getChildren().add(pinky);
+
+				root.getChildren().remove(blinky);
+				blinky = new Circle(jeu.blinky.y*jeu.blinky.size*MULTI, jeu.blinky.x*jeu.blinky.size*MULTI, jeu.blinky.rayon*MULTI);
+				blinky.setFill(Color.RED);
+				root.getChildren().add(blinky);
 			}
 		});
 	}
 	
+	private void renderBlinky() {
+		blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
+		blinky.setCenterY(jeu.blinky.x*jeu.blinky.size*MULTI);
+		if(jeu.multiplayer == Muliplayer.SERVER) {
+			Net.sendData("5/"+jeu.blinky.x+";"+jeu.blinky.y);
+		}
+	}
+	
+	private void renderPinky() {
+		pinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
+		pinky.setCenterY(jeu.blinky.x*jeu.blinky.size*MULTI);
+	}
 	private void renderGhost() {
 		//Mise a jour de la position de blinky
 		blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
@@ -528,9 +550,9 @@ public class ViewJeu extends Stage{
 	private boolean showingPath = false;
 	final Timeline timelinePath = new Timeline(
 	 	    new KeyFrame(
-	 	        Duration.millis( 20 ),
+	 	        Duration.millis( 250 ),
 	 	        event -> {
-	 	        	if(showingPath) {
+	 	        	if(showingPath && jeu.multiplayer != Muliplayer.CLIENT) {
 	 	        		paths.values().forEach(r->{
 	 	        			r.setFill(Color.BLACK);
 	 	        		});
@@ -538,6 +560,7 @@ public class ViewJeu extends Stage{
 	 	        		nodesBlinky.forEach(n->{
 	 	        			paths.get(n.getX()+";"+n.getY()).setFill(Color.INDIANRED);
 	 	        		});
+	 	        		jeu.moveBlinky(nodesBlinky.get(0).getX()+0.5, nodesBlinky.get(0).getY()+0.5);
 	 	        		List<Node> nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
 	 	        		try {
         	        		switch (jeu.player.dir) {
@@ -561,9 +584,15 @@ public class ViewJeu extends Stage{
         	        		nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
         	        	}
 	 	        		
-	 	        		nodesPinky.forEach(n->{
-	 	        			paths.get(n.getX()+";"+n.getY()).setFill(Color.PINK);
-	 	        		});
+	 	        		//nodesPinky.forEach(n->{
+	 	        		//	paths.get(n.getX()+";"+n.getY()).setFill(Color.PINK);
+	 	        		//});
+	 	        		paths.get(nodesPinky.get(0).getX()+";"+nodesPinky.get(0).getY()).setFill(Color.PINK);
+	 	        		if(jeu.multiplayer == Muliplayer.SOLO) {
+	 	        			if(nodesPinky != null && !nodesPinky.isEmpty())
+	 	        				jeu.movePinky(nodesPinky.get(0).getX()+0.5, nodesPinky.get(0).getY()+0.5);
+	 	        		}
+
 	 	        	}	
 	        }
 	    )
