@@ -2,6 +2,7 @@ package application;
 
 import java.util.HashMap;
 
+import javafx.animation.Timeline;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Separator;
@@ -49,6 +50,7 @@ public class Editeur extends Stage{
 		for(int l = 0; l<map.length; l++) {
 			for (int c = 0; c<map[l].length; c++) {	
 				Rectangle rect = new Rectangle(c*size*MULTI, l*size*MULTI, size*MULTI, size*MULTI);
+				rect.setStroke(Color.WHITE);
 				rect.setOnMouseClicked(e->{
 					int ll = (int) (rect.getY()/size/MULTI);
 					int lc = (int) (rect.getX()/size/MULTI);

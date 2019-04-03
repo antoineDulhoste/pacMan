@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import PathFinding.PathMap;
 import javafx.application.Platform;
@@ -21,6 +23,7 @@ public class Jeu extends Observable{
 	Muliplayer multiplayer;
 	public PathMap pathMap;
 	
+	public boolean over = false;
 	private boolean ready = false;
 	private boolean started = false;
 	
@@ -33,8 +36,8 @@ public class Jeu extends Observable{
 			serverListen();
 			
 			this.player = new PacMan(level.getPlayerX()+0.5, level.getPlayerY()+0.5);
-			this.pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, level.getMap());
-			this.blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, level.getMap());
+			this.pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, this);
+			this.blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, this);
 			this.pathMap = new PathMap(level.map);
 			
 			System.out.println("Call");
@@ -52,8 +55,8 @@ public class Jeu extends Observable{
 			this.level = level;
 			
 			this.player = new PacMan(level.getPlayerX()+0.5, level.getPlayerY()+0.5);
-			this.pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, level.getMap());
-			this.blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, level.getMap());
+			this.pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, this);
+			this.blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, this);
 			this.pathMap = new PathMap(level.map);
 			viewCall();
 			break;
@@ -202,6 +205,11 @@ public class Jeu extends Observable{
 		return player.x+";"+player.y;
 	}
 	
+	private void startGameServer() {
+		setChanged();
+		notifyObservers("SERVERSTART");
+	}
+	
 	private void serverListen() {
 		new Thread(new Runnable() {	
 			@Override
@@ -215,8 +223,7 @@ public class Jeu extends Observable{
 							System.out.println("Packet 0 ignored");
 						} else if( packet.equalsIgnoreCase("1") ) {
 							System.out.println("Client ready");
-							Net.sendData("2/Start");
-							started = true;
+							startGameServer();
 						} else if( packet.equalsIgnoreCase("2") ) {
 							System.out.println("Packet 2 ignored");
 						} else if( packet.equalsIgnoreCase("3") ) {
@@ -239,6 +246,7 @@ public class Jeu extends Observable{
 		}).start();
 	}
 	
+	private boolean retry = true;
 	private void clientListen() {
 		new Thread(new Runnable() {	
 			@Override
@@ -252,16 +260,23 @@ public class Jeu extends Observable{
 							level = new Level(str);
 							
 							player = new PacMan(level.getPlayerX()+0.5, level.getPlayerY()+0.5);
-							pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, level.getMap());
-							blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, level.getMap());
+							pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, local);
+							blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, local);
 							pathMap = new PathMap(level.map);
 							Net.sendData("1/Ready");
+							ClientSendReady();
 							viewCall();
 						} else if( packet.equalsIgnoreCase("1") ) {
 							System.out.println("Packet 1 ignored");
-						} else if( packet.equalsIgnoreCase("2") ) {
-							System.out.println("Game start");
-							started = true;
+						} else if( packet.equalsIgnoreCase("2") ) {					
+							if(retry) {
+								timer.cancel();
+								System.out.println("Game start");
+								setChanged();
+								notifyObservers("CLIENTSTART");
+								started = true;
+							}
+							retry = false;
 						} else if( packet.equalsIgnoreCase("3") ) {
 							System.out.println("Serv end game. Winner : "+packet);
 							started = false;
@@ -288,6 +303,15 @@ public class Jeu extends Observable{
 			}
 		}).start();
 	}
+	private Timer timer = new Timer();
+	private void ClientSendReady() {
+		timer.schedule( new TimerTask() {
+		    public void run() {
+		    	Net.sendData("1/Ready");
+		    	System.out.println("Retry Packet Ready");
+		    }
+		 }, 0, 1000);
+	}
 	
 	private Jeu local = this;
 	private void viewCall() {
@@ -309,5 +333,11 @@ public class Jeu extends Observable{
 	}
 	public boolean isClient() {
 		return multiplayer == Muliplayer.CLIENT;
+	}
+	public boolean isOver() {
+		return over;
+	}
+	public void switchOver() {
+		this.over = !over;
 	}
 }

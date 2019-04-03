@@ -1,34 +1,52 @@
 package application;
 
-public abstract class Ghost extends Entite implements Runnable {
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
-	public  int[][] plateau;
+public abstract class Ghost extends Entite {
+
+	private Timeline timeline = new Timeline(
+	 	    new KeyFrame(
+    	 	        Duration.millis(250),
+    	 	        event -> {
+    	 	        	run();
+    	 	        })
+    	 	    );
+	public Jeu jeu;
 	
-	public Ghost(double x, double y, int[][] plateau) {
+	public Ghost(double x, double y, Jeu jeu) {
 		super(x, y);
-		this.plateau = plateau;
+		this.jeu = jeu;
 	}
 	
-	@Override
+	public void start() {
+		timeline.setCycleCount(Animation.INDEFINITE);
+		timeline.play();
+	}
+	public void stop() {
+		timeline.stop();
+	};
 	public abstract void run();
 	
 	public boolean canMoveVertically(Double addY) {
 		if(addY > 0) {
 			Double y = this.y + 0.495;
 			y+=addY;
-			if(plateau[this.x.intValue()][y.intValue()] == 1) return false;
+			if(jeu.level.map[this.x.intValue()][y.intValue()] == 1) return false;
 			Double topLeft = this.x - 0.495;
-			if(plateau[topLeft.intValue()][y.intValue()] == 1) return false;
+			if(jeu.level.map[topLeft.intValue()][y.intValue()] == 1) return false;
 			Double topRight = this.x + 0.495;
-			if(plateau[topRight.intValue()][y.intValue()] == 1) return false;
+			if(jeu.level.map[topRight.intValue()][y.intValue()] == 1) return false;
 		}else {
 			Double y = this.y - 0.495;
 			y+=addY;
-			if(plateau[this.x.intValue()][y.intValue()] == 1) return false;
+			if(jeu.level.map[this.x.intValue()][y.intValue()] == 1) return false;
 			Double topLeft = this.x - 0.495;
-			if(plateau[topLeft.intValue()][y.intValue()] == 1) return false;
+			if(jeu.level.map[topLeft.intValue()][y.intValue()] == 1) return false;
 			Double topRight = this.x + 0.495;
-			if(plateau[topRight.intValue()][y.intValue()] == 1) return false;
+			if(jeu.level.map[topRight.intValue()][y.intValue()] == 1) return false;
 		}
 		return true;
 	}
@@ -38,20 +56,20 @@ public abstract class Ghost extends Entite implements Runnable {
 		if(addX > 0) {
 			Double x = this.x + 0.495;
 			x+=addX;
-			if(plateau[x.intValue()][this.y.intValue()] == 1) sortie = false;
+			if(jeu.level.map[x.intValue()][this.y.intValue()] == 1) sortie = false;
 			Double topLeft = this.y - 0.495;
-			if(plateau[x.intValue()][topLeft.intValue()] == 1) sortie = false;
+			if(jeu.level.map[x.intValue()][topLeft.intValue()] == 1) sortie = false;
 			Double topRight = this.y + 0.495;
-			if(plateau[x.intValue()][topRight.intValue()] == 1) sortie = false;
+			if(jeu.level.map[x.intValue()][topRight.intValue()] == 1) sortie = false;
 			
 		}else {
 			Double x = (Double)this.x - 0.495;
 			x+=addX;
-			if(plateau[x.intValue()][this.y.intValue()] == 1) sortie = false;
+			if(jeu.level.map[x.intValue()][this.y.intValue()] == 1) sortie = false;
 			Double topLeft = this.y - 0.495;
-			if(plateau[x.intValue()][topLeft.intValue()] == 1) sortie = false;
+			if(jeu.level.map[x.intValue()][topLeft.intValue()] == 1) sortie = false;
 			Double topRight = this.y + 0.495;
-			if(plateau[x.intValue()][topRight.intValue()] == 1) sortie = false;
+			if(jeu.level.map[x.intValue()][topRight.intValue()] == 1) sortie = false;
 		}
 		return sortie;
 	}

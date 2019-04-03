@@ -1,25 +1,18 @@
 package application;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-
-import PathFinding.Node;
 import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
@@ -28,6 +21,7 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -43,17 +37,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
- 
 import static java.util.stream.Collectors.*;
-
-import java.awt.TextField;
-
-import static java.util.Map.Entry.*;
 
 public class ViewJeu extends Stage{
 	
@@ -74,13 +58,25 @@ public class ViewJeu extends Stage{
 	boolean gameover = false;
 	Text scoreJeu = new Text("0000");
 	
-	/* Affichage du path <"x;y", Rectangle>*/
-	HashMap<String, Rectangle> paths = new HashMap<>();
+	ArrayList<Rectangle> paths = new ArrayList<>();
 	
 	/* Threads */
 	AnimationTimer ATCoins;
 	MediaPlayer mediaplayer;
-	Thread TMusique;
+	Thread TMusique = new Thread(new Runnable() {
+		@Override
+		public void run() {
+			try{
+	    		String uriString = new File("song.mp3").toURI().toString();
+	    		mediaplayer = new MediaPlayer(new Media(uriString));
+	    		mediaplayer.setAutoPlay(true);
+	    		mediaplayer.setVolume(0.01);
+	    		mediaplayer.setCycleCount(MediaPlayer.INDEFINITE);
+	    	    }catch(Exception ex){ 
+	    		   ex.printStackTrace();
+	    	   }
+		}
+	});;
 	Timeline timelineDeplacements;
 	Timeline wallAnimation;
 	Timeline timelineGameOver;
@@ -122,7 +118,7 @@ public class ViewJeu extends Stage{
 					rect.setFill(Color.BLACK);
 				}else {
 					rect.setFill(Color.BLACK);
-					paths.put(l+";"+c, rect);
+					paths.add(rect);
 				}
 				root.getChildren().add(rect);
 			}
@@ -159,6 +155,8 @@ public class ViewJeu extends Stage{
 			                    } else validationScore();
                     			
                     			break;
+					default:
+						break;
             	}
             }
         });
@@ -295,7 +293,7 @@ public class ViewJeu extends Stage{
     			renderGhost();
     		}
         
-		timelineDeplacements.play();
+		
         
 		wallAnimation = new Timeline(
 	        	    new KeyFrame(
@@ -367,9 +365,17 @@ public class ViewJeu extends Stage{
 						skip = true;
 					}
 				}
-				
-				if( arg instanceof String) {
+				if( arg instanceof String) {			
 					String str = (String) arg;
+					if (str.equals("SERVERSTART")) {			
+						startGame();
+						skip = true;
+					}
+					if (str.equals("CLIENTSTART")) {
+						System.out.println("CLIENTSTART");
+						NETStartGame();
+						skip = true;
+					}
 					if (str.equals("RENDEROTHER")) {
 						renderOtherNET();
 						skip = true;
@@ -383,14 +389,12 @@ public class ViewJeu extends Stage{
 						skip = true;
 					}
 					if (str.equals("GAMEOVER")) {
-						Platform.runLater(new Runnable() {
-							
+						Platform.runLater(new Runnable() {		
 							@Override
 							public void run() {
 								GameOver();
 							}
-						});
-						
+						});	
 						skip = true;
 					}
 				}
@@ -403,18 +407,12 @@ public class ViewJeu extends Stage{
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
-				}
-				
+				}	
 			}
 		});
 		
 		/* Pour equilibrer si le joueur joue Pinky il ne voit pas les gums restants */
 		if(!jeu.isClient()) addGums();
-		
-		if(jeu.isServer() || jeu.isSolo()) {
-			timelinePath.setCycleCount(Animation.INDEFINITE);
-			timelinePath.play();
-		}
 		
 		String imageURI = new File("icone.png").toURI().toString(); 
 		Image image = new Image(imageURI);
@@ -429,6 +427,19 @@ public class ViewJeu extends Stage{
 				}
 			}
 		});
+		
+		root.getChildren().add(startCoolDown);
+		startCoolDown.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
+		startCoolDown.setFill(Color.WHITE);
+		startCoolDown.setX((jeu.level.getMap().length*jeu.size*MULTI)/2-15);
+		if(jeu.isClient()) {
+			startCoolDown.setText("Waiting for start");
+			startCoolDown.setY((jeu.level.getMap()[0].length*jeu.size*MULTI)/2-150);
+		}else if(jeu.isSolo()){
+			startCoolDown.setText(cooldown+"");
+			startCoolDown.setY((jeu.level.getMap()[0].length*jeu.size*MULTI)/2-25);
+			startGame();
+		}
 	}
 	
 	private void addGums() {
@@ -460,13 +471,13 @@ public class ViewJeu extends Stage{
 		ATCoins.stop();
 		timelineGameOver.stop();
 		timelineDeplacements.stop();
-		timelinePath.stop();
 	}
-	javafx.scene.control.TextField tf = new javafx.scene.control.TextField();
+	TextField tf = new TextField();
 	private void GameOver() {
 			gameover = true;
+			jeu.switchOver();
 		 stopAllThread();
-		 for(Rectangle r : paths.values()) root.getChildren().remove(r);
+		 for(Rectangle r : paths) root.getChildren().remove(r);
 		 for(Gum c : jeu.gums) root.getChildren().remove(c);
 		 root.getChildren().remove(scoreJeu);
 		 final Timeline timeline = new Timeline(
@@ -515,7 +526,6 @@ public class ViewJeu extends Stage{
 	        	);
 	        	timeline.setCycleCount( Animation.INDEFINITE );
 	        	timeline.play();
-	        	
 	        	
 	        	/* Ajoute un texte */
 	        	loadScores();
@@ -572,11 +582,7 @@ public class ViewJeu extends Stage{
 	        				id.setY((100+number*50)*MULTI);
 	        				id.setFill(Color.WHITE);
 	        	        	
-	        	        	Text tscore = new Text(sorted.get(s)+"");
-	        	        	tscore.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
-	        	        	tscore.setX(250*MULTI);
-	        	        	tscore.setY((100+number*50)*MULTI);
-	        	        	tscore.setFill(Color.WHITE);
+	        	        	TextDisplay tscore = new TextDisplay(22*MULTI, 250*MULTI, (100+number*50)*MULTI, sorted.get(s)+"");
 	        	        	root.getChildren().addAll(id, tscore);
 	        			}
 	        			number++;
@@ -600,18 +606,6 @@ public class ViewJeu extends Stage{
 		//Mise a jour de la position du joueur
 		player.setCenterX(jeu.player.y*jeu.player.size*MULTI);
 		player.setCenterY(jeu.player.x*jeu.player.size*MULTI);
-	}
-	
-	private void renderPlayerNET() {
-		Platform.runLater(new Runnable(){
-			@Override
-			public void run() {
-				root.getChildren().remove(player);
-				player = new Circle(jeu.player.y*jeu.player.size*MULTI, jeu.player.x*jeu.player.size*MULTI, jeu.player.rayon*MULTI);
-				player.setFill(Color.YELLOW);
-				root.getChildren().add(player);
-			}
-		});
 	}
 	
 	private void renderOtherNET() {
@@ -643,6 +637,7 @@ public class ViewJeu extends Stage{
 		pinky.setCenterX(jeu.pinky.y*jeu.pinky.size*MULTI);
 		pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
 	}
+	
 	private void renderGhost() {
 		//Mise a jour de la position de blinky
 		blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
@@ -651,142 +646,45 @@ public class ViewJeu extends Stage{
 		pinky.setCenterX(jeu.pinky.y*jeu.pinky.size*MULTI);
 		pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
 	}
-	
-	private boolean showingPath = true;
-	final Timeline timelinePath = new Timeline(
-	 	    new KeyFrame(
-	 	        Duration.millis( 250 ),
-	 	        event -> {
-	 	        	if(showingPath && jeu.multiplayer != Muliplayer.CLIENT) {
-	 	        		//System.out.println("Path"); 
-	 	        		//paths.values().forEach(r->{
-	 	        		//	r.setFill(Color.BLACK);
-	 	        		//});
-	 	        		List<Node> nodesBlinky = jeu.pathMap.findPath(jeu.blinky.x.intValue(), jeu.blinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
-	 	        		//nodesBlinky.forEach(n->{
-	 	        		//	paths.get(n.getX()+";"+n.getY()).setFill(Color.INDIANRED);
-	 	        		//});
-	 	        		jeu.moveBlinky(nodesBlinky.get(0).getX()+0.5, nodesBlinky.get(0).getY()+0.5);
-	 	        		List<Node> nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
-	 	        		try {
-        	        		switch (jeu.player.dir) {
-            	        	case 1: 
-            	        		nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue() - 3);
-            	        		break;
-            	        	case 2: 
-            	        		nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue() + 3, jeu.player.y.intValue());
-            	        		break;
-            	        	case 3: 
-            	        		nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue() + 3);
-            	        		break;
-            	        	case 4: 
-            	        		nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue() - 3, jeu.player.y.intValue());
-            	        		break;
-            	        	default:
-            	        		nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
-            	        		break;
-            	        	}
-        	        	}catch(Exception ex) {
-        	        		nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
-        	        	}
-	 	        		if(nodesPinky == null || nodesPinky.isEmpty()) {
-	 	        			nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
-	 	        		}
-	 	        		//nodesPinky.forEach(n->{
-	 	        		//	paths.get(n.getX()+";"+n.getY()).setFill(Color.PINK);
-	 	        		//});
-	 	        		//paths.get(nodesPinky.get(0).getX()+";"+nodesPinky.get(0).getY()).setFill(Color.PINK);
-	 	        		if(jeu.multiplayer == Muliplayer.SOLO) {
-	 	        			if(nodesPinky != null && !nodesPinky.isEmpty())
-	 	        				jeu.movePinky(nodesPinky.get(0).getX()+0.5, nodesPinky.get(0).getY()+0.5);
-	 	        		}
-	 	        	}	
-	        }
-	    )
-	);
-
-	
-	/* SERVER */
-	private ServerSocket serverSocket;
-	private Socket socket;
-	private DataOutputStream dos;
-	private DataInputStream dis;
-	
-	public void sendData(String str) throws Exception{
-		dos = new DataOutputStream(socket.getOutputStream());
-		dos.writeUTF(str);
-	}
-
-	private void startServer() throws Exception {
-		System.out.println("Starting Server .b.");
-		serverSocket = new ServerSocket(7777);
-		System.out.println("Server Started\nWaiting for connection ...");
-		socket = serverSocket.accept();
-		System.out.println("Connection from: "+ socket.getInetAddress());
-		
-		dis = new DataInputStream(socket.getInputStream());	
-		
-		new Thread(new Runnable() {
-			
+	/* Methodes lié au Reseaux */
+	public void NETStartGame() {
+ 		timelineDeplacements.play();
+ 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					while((dis = new DataInputStream(socket.getInputStream())) != null) {
-						String str = dis.readUTF();
-						System.out.println("S Receive: "+str);
-						ServerReceiveData(str);
-					}
-				}catch (Exception ex) {
-					ex.printStackTrace();
-				}
+				root.getChildren().remove(startCoolDown);
 			}
-		}).start();
-	}
-	
-	private void joinServer() throws Exception{
-		System.out.println("Connection to server");
-		socket = new Socket("localhost", 7777);
-		dis = new DataInputStream(socket.getInputStream());
-
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					while((dis = new DataInputStream(socket.getInputStream())) != null) {
-						String str = dis.readUTF();
-						System.out.println("C Receive: "+str);
-						ClientReceiveData(str);
-					}
-				}catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				
-			}
-		}).start();
-	}
-	
-	public void ClientReceiveData(String str) {
-		String[] list = str.split(";");
-		jeu.pinky.x = Double.parseDouble(list[0]);
-		jeu.pinky.y = Double.parseDouble(list[1]);
-		renderOtherNET();
-	}
-	
-	public void ServerReceiveData(String str) {
-		String[] list = str.split(";");
-		jeu.pinky.x = Double.parseDouble(list[0]);
-		jeu.pinky.y = Double.parseDouble(list[1]);
-		renderOtherNET();
-	}
-	
-	private void setFirstPlan() {
-		jeu.gums.forEach(g->{
-			root.getChildren().remove(g);
-			root.getChildren().add(g);
 		});
 	}
+	
+	private Timeline timelineStartGame;
+	private int cooldown = 4;
+	private Text startCoolDown = new Text(cooldown+"");
+	private void startGame() {
+		timelineStartGame = new Timeline(
+		 	    new KeyFrame(
+	    	 	        Duration.seconds(1),
+	    	 	        event -> {    	 	        	
+	    	 	        	if(cooldown > 0) {
+	    	 	        		cooldown--;
+	    	 	        	}else {
+	    	 	        		//jeu.blinky.start();
+	    	 	        		if(jeu.isSolo()) jeu.pinky.start();
+	    	 	        		timelineDeplacements.play();
+	    	 	        		root.getChildren().remove(startCoolDown);
+	    	 	        		timelineStartGame.stop();
+	    	 	        		if(jeu.isServer()) Net.sendData("2/Start");
+	    	 	        	}
+	    	 	        	startCoolDown.setText(cooldown+"");
+	    	 	        })
+	    	 	    );
+		timelineStartGame.setCycleCount(cooldown+1);
+		timelineStartGame.play();
+	}
+	
+	/** Gestions scores **/
 	static HashMap<String, Integer> scores = new HashMap<String, Integer>();
+	@SuppressWarnings("unchecked")
 	private void loadScores() {
 		try
         {

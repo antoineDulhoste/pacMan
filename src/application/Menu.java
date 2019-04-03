@@ -250,7 +250,7 @@ public class Menu extends Stage {
         root.getChildren().add(levels);
         
         Text t3 = new Text();
-        t3.setText("VALIDER");
+        t3.setText("Valider");
         t3.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
         t3.setX(130);
         t3.setY(650);
@@ -258,12 +258,8 @@ public class Menu extends Stage {
         t3.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-            	try {
-            		System.out.println("PACMAN SERVER:\nPORT: "+Integer.parseInt(t1.getText())+"\nLEVEL: "+levels.getValue().getName());
-                	Net.startServer(Integer.parseInt(t1.getText()));
-            	}catch(Exception ex) {
-            		
-            	}
+            	System.out.println("PACMAN SERVER:\nPORT: "+Integer.parseInt(port.getText())+"\nLEVEL: "+levels.getValue().getName());
+            	Net.startServer(Integer.parseInt(port.getText()));
             }
         });
         root.getChildren().add(t3);

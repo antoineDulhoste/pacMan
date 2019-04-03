@@ -1,6 +1,8 @@
 package application;
 
-public abstract class Entite {
+import java.util.TimerTask;
+
+public abstract class Entite{
 	
 	public Double x, y;
 	public int dir = 0;
