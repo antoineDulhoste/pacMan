@@ -17,7 +17,7 @@ public class ActionEchap implements EventHandler<KeyEvent> {
     	if(event.getCode() == KeyCode.ESCAPE){
             if(m.getCompteur()==1) {
             	m.setCompteur(0);
-            	m.menuRemove(3);
+            	m.menuRemove(4);
             	m.t1();
             } 
             if(m.getCompteur()==2){

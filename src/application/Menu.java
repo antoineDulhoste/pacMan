@@ -180,26 +180,42 @@ public class Menu extends Stage {
             @Override
             public void handle(MouseEvent event) {
             	setCompteur(2);
-            	menuRemove(3);
+            	menuRemove(4);
             	menuMulti();
             }
         });
         root.getChildren().add(t2);
         
         Text t3 = new Text();
-        t3.setText("exit");
+        t3.setText("edit map");
         t3.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
-        t3.setX(250);
+        t3.setX(190);
         t3.setY(640);
         t3.setCursor(Cursor.CLOSED_HAND);
         t3.setFill(Color.WHITE);
         t3.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-            	System.exit(0);
+            	close();
+            	new Editeur(20, 20, "Yolo 2");
             }
         });
         root.getChildren().add(t3);
+        
+        Text t4 = new Text();
+        t4.setText("exit");
+        t4.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
+        t4.setX(250);
+        t4.setY(700);
+        t4.setCursor(Cursor.CLOSED_HAND);
+        t4.setFill(Color.WHITE);
+        t4.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+            	System.exit(0);
+            }
+        });
+        root.getChildren().add(t4);
     }
 	
 	public void menuConfigServer() {
