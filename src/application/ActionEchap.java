@@ -28,7 +28,7 @@ public class ActionEchap implements EventHandler<KeyEvent> {
             if(m.getCompteur()==3){
             	m.setCompteur(2);
             	m.menuRemove(5);
-            	m.menu1();
+            	m.menuMulti();
             }
         }
     }

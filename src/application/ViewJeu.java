@@ -3,11 +3,19 @@ package application;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -30,12 +38,26 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+ 
+import static java.util.stream.Collectors.*;
+
+import java.awt.TextField;
+
+import static java.util.Map.Entry.*;
 
 public class ViewJeu extends Stage{
 	
-	private static final double MULTI = 1.0;
+	private static final double MULTI = 2.0;
 	private Jeu jeu;
 	/* Layout */
 	private Group root = new Group();
@@ -49,6 +71,8 @@ public class ViewJeu extends Stage{
 	ArrayList<Rectangle> walls = new ArrayList<>(); 
 	int wallCursor = 0;
 	int wallColor = 0;
+	boolean gameover = false;
+	Text scoreJeu = new Text("0000");
 	
 	/* Affichage du path <"x;y", Rectangle>*/
 	HashMap<String, Rectangle> paths = new HashMap<>();
@@ -61,19 +85,19 @@ public class ViewJeu extends Stage{
 	Timeline wallAnimation;
 	Timeline timelineGameOver;
 	
-	Muliplayer muliplayer;
-	
+	/** Final Timelines **/
+	Timeline TLPathFinding;
+		
 	public ViewJeu(Jeu jeu, Muliplayer muliplayer) {
 		Main.menu.close();
 		this.jeu = jeu;
-		this.muliplayer = muliplayer;
 		try {
 			if(muliplayer == Muliplayer.SERVER) {
 				this.setTitle("PacMan SERVER");
-				startServer();
+				//startServer();
 			} else if (muliplayer == Muliplayer.CLIENT) {
 				this.setTitle("PacMan CLIENT");
-				joinServer();
+				//joinServer();
 			}
 		}catch(Exception ex) {
 			ex.printStackTrace();
@@ -125,21 +149,22 @@ public class ViewJeu extends Stage{
                     case DOWN:  jeu.player.dirWanted = 2; break;
                     case LEFT:  jeu.player.dirWanted = 1; break;
                     case RIGHT: jeu.player.dirWanted = 3; break; 
-                    case ENTER: GameOver(); 
-                    			if(jeu.multiplayer == Muliplayer.SERVER) {
-                    				Net.sendData("3/GHOST");
-                    			} else if(jeu.multiplayer == Muliplayer.CLIENT) {
-                    				Net.sendData("3/PACMAN");
-                    			}
+                    case ENTER: if(!gameover) {
+			                    	GameOver(); 
+			                    	if(jeu.multiplayer == Muliplayer.SERVER) {
+			            				Net.sendData("3/GHOST");
+			            			} else if(jeu.multiplayer == Muliplayer.CLIENT) {
+			            				Net.sendData("3/PACMAN");
+			            			}
+			                    } else validationScore();
+                    			
                     			break;
-                    case SPACE: showPath(); break;
             	}
             }
         });
         
         scene.setOnScroll((ScrollEvent event) -> {
             double deltaY = event.getDeltaY();
-
             if(deltaY < 0) {
             	mediaplayer.setVolume(mediaplayer.getVolume()-0.05);
             } else {
@@ -150,25 +175,27 @@ public class ViewJeu extends Stage{
         /* Thread */
         ATCoins = new AnimationTimer() {
             @Override public void handle(long currentNanoTime) {
-            	/* Collision Coins */
+            	/* On regarde les collisions de PacMan avec les Gums */
                 for(Gum c : jeu.gums) {
                 	Shape intersect = Shape.intersect(player, c);
-
-                    if(intersect.getBoundsInLocal().getWidth() != -1)
-                    {
+                    if(intersect.getBoundsInLocal().getWidth() != -1){
                     	jeu.removeGum(c);
                     	break;
                     }
-                    
                 }
+                /* Si il n'y a plus de gums en jeu victoire de PacMan*/
                 if(jeu.gums.isEmpty()) {
-                	if(jeu.multiplayer == Muliplayer.SERVER) Net.sendData("3/PACMAN");
+                	/* Si jeu en multi il faut avertir l'autre joueur */
+                	if(jeu.isServer()) Net.sendData("3/PACMAN");
+                	/* On execute l'animation de GameOver et on fini la partie */
                 	GameOver();
                 }
             }
         };
-        if(muliplayer != muliplayer.CLIENT) ATCoins.start();
+        /* Si le joueur joue Pinky il ne doit pas rammaser les gums */
+        if(!jeu.isClient()) ATCoins.start();
         
+        /* Thread concernant la musique */
         TMusique = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -178,9 +205,7 @@ public class ViewJeu extends Stage{
 		    		mediaplayer.setAutoPlay(true);
 		    		mediaplayer.setVolume(0.01);
 		    		mediaplayer.setCycleCount(MediaPlayer.INDEFINITE);
-		    	    }
-		    	   catch(Exception ex)
-		    	   { 
+		    	    }catch(Exception ex){ 
 		    		   ex.printStackTrace();
 		    	   }
 			}
@@ -246,9 +271,15 @@ public class ViewJeu extends Stage{
             	        }
             	    )
             	);
+			scoreJeu.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22));
+			scoreJeu.setX(22);
+			scoreJeu.setY(22);
+			root.getChildren().add(scoreJeu);
+			scoreJeu.setFill(Color.WHITE);
     		timelineDeplacements.setCycleCount( Animation.INDEFINITE );
        
-    		if(muliplayer == Muliplayer.CLIENT) {
+    		/* Si le joueur joue Pinky on interverti les deux entites */
+    		if(jeu.isClient()) {
     			double x = jeu.pinky.x;
     			double y = jeu.pinky.y;
     			
@@ -329,6 +360,7 @@ public class ViewJeu extends Stage{
 					Gum gum = (Gum) arg;
 					if ( root.getChildren().contains(gum)) {
 						root.getChildren().remove(gum);
+						scoreJeu.setText(jeu.score+"");
 						skip = true;
 					} else {
 						root.getChildren().add(gum);
@@ -364,9 +396,9 @@ public class ViewJeu extends Stage{
 				}
 				if(skip) return;
 				try {
-					if(muliplayer == Muliplayer.SERVER) {
+					if(jeu.isServer()) {
 						Net.sendData("4/"+jeu.ServerSendData());
-					}else if (muliplayer == Muliplayer.CLIENT) {
+					}else if (jeu.isClient()) {
 						Net.sendData("4/"+jeu.ClientSendData());
 					}
 				} catch (Exception ex) {
@@ -376,7 +408,13 @@ public class ViewJeu extends Stage{
 			}
 		});
 		
-		if(jeu.multiplayer != Muliplayer.CLIENT) addCoins();
+		/* Pour equilibrer si le joueur joue Pinky il ne voit pas les gums restants */
+		if(!jeu.isClient()) addGums();
+		
+		if(jeu.isServer() || jeu.isSolo()) {
+			timelinePath.setCycleCount(Animation.INDEFINITE);
+			timelinePath.play();
+		}
 		
 		String imageURI = new File("icone.png").toURI().toString(); 
 		Image image = new Image(imageURI);
@@ -393,14 +431,13 @@ public class ViewJeu extends Stage{
 		});
 	}
 	
-	private void addCoins() {
+	private void addGums() {
 		for(int l = 0; l<jeu.level.map.length; l++) {
 			for (int c = 0; c<jeu.level.map[l].length; c++) {
 				if(jeu.level.map[l][c] == 0) {
 					Gum gum = new Gum(c*16*MULTI+(16/2*MULTI), l*16*MULTI+(16/2*MULTI), 2*MULTI, 1);
 					jeu.addGum(gum);
 				}
-				
 			}
 		}
 	}
@@ -423,13 +460,15 @@ public class ViewJeu extends Stage{
 		ATCoins.stop();
 		timelineGameOver.stop();
 		timelineDeplacements.stop();
+		timelinePath.stop();
 	}
-	
+	javafx.scene.control.TextField tf = new javafx.scene.control.TextField();
 	private void GameOver() {
+			gameover = true;
 		 stopAllThread();
 		 for(Rectangle r : paths.values()) root.getChildren().remove(r);
 		 for(Gum c : jeu.gums) root.getChildren().remove(c);
-		 jeu.gums.clear();
+		 root.getChildren().remove(scoreJeu);
 		 final Timeline timeline = new Timeline(
 	        	    new KeyFrame(
 	        	        Duration.millis( 20 ),
@@ -477,6 +516,73 @@ public class ViewJeu extends Stage{
 	        	timeline.setCycleCount( Animation.INDEFINITE );
 	        	timeline.play();
 	        	
+	        	
+	        	/* Ajoute un texte */
+	        	loadScores();
+	        	scores.put("<SYSNON>", jeu.score);
+	        	System.out.println(scores.size());
+	        	HashMap<String, Integer> sorted = scores
+	        	        .entrySet()
+	        	        .stream()
+	        	        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+	        	        .collect(
+	        	            toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+	        	                LinkedHashMap::new));
+	        	Text victoire;
+	        	System.err.println(jeu.gums.size());
+	        	if(jeu.gums.isEmpty()) {
+	        		victoire = new Text("Victoire de Pacman");
+	        	}else {
+	        		victoire = new Text("Victoire des Fantomes");
+	        	}
+	        	victoire.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+	        	victoire.setX(22*MULTI);
+	        	victoire.setY(50*MULTI);
+	        	victoire.setFill(Color.WHITE);
+	        	Text scorePacMan = new Text("Score : "+jeu.score);
+	        	scorePacMan.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+	        	scorePacMan.setX(22*MULTI);
+	        	scorePacMan.setY(100*MULTI);
+	        	scorePacMan.setFill(Color.WHITE);
+	        	tf.setStyle("-fx-text-fill: white; -fx-background-color: black; -fx-border-color:white; -fx-border-radius:5px; -fx-font-family:'Comic Sans MS';-fx-font-size:20;");
+	        	int number = 1;
+	        	boolean deja = false;
+	        	for(String s : sorted.keySet()) {
+	        		if(number < 5) {
+	        			if(s.equals("<SYSNON>") && !deja) {
+	        				deja = true;
+	        				Text id = new Text(number+" ");
+	        				id.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+	        				id.setX(22*MULTI);
+	        				id.setY((100+number*50)*MULTI);
+	        				id.setFill(Color.WHITE);
+	        				
+	        				tf.setTranslateX(60*MULTI);
+	        				tf.setTranslateY((100+number*50-20)*MULTI);
+	        				Text tscore = new Text(jeu.score+"");
+	        				tscore.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+	        				tscore.setX(250*MULTI);
+	        				tscore.setY((100+number*50)*MULTI);
+	        				tscore.setFill(Color.WHITE);
+	        	        	root.getChildren().addAll(id, tf, tscore);
+	        			}else {
+	        				Text id = new Text(number+" "+s+" : ");
+	        				id.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+	        				id.setX(22*MULTI);
+	        				id.setY((100+number*50)*MULTI);
+	        				id.setFill(Color.WHITE);
+	        	        	
+	        	        	Text tscore = new Text(sorted.get(s)+"");
+	        	        	tscore.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+	        	        	tscore.setX(250*MULTI);
+	        	        	tscore.setY((100+number*50)*MULTI);
+	        	        	tscore.setFill(Color.WHITE);
+	        	        	root.getChildren().addAll(id, tscore);
+	        			}
+	        			number++;
+	        		} else break;
+	        	}
+	        	root.getChildren().addAll(victoire, scorePacMan);
 	        	final Timeline timelinerestart = new Timeline(
 	        	 	    new KeyFrame(
 	        	 	        Duration.seconds(5),
@@ -488,7 +594,7 @@ public class ViewJeu extends Stage{
 	        	 	        })
 	        	 	    );
 	        	//timelinerestart.play();
-	        	
+	        	jeu.gums.clear();
 	}
 	private void renderPlayer() {
 		//Mise a jour de la position du joueur
@@ -510,7 +616,6 @@ public class ViewJeu extends Stage{
 	
 	private void renderOtherNET() {
 		Platform.runLater(new Runnable(){
-		
 			@Override
 			public void run() {
 				root.getChildren().remove(pinky);
@@ -535,8 +640,8 @@ public class ViewJeu extends Stage{
 	}
 	
 	private void renderPinky() {
-		pinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
-		pinky.setCenterY(jeu.blinky.x*jeu.blinky.size*MULTI);
+		pinky.setCenterX(jeu.pinky.y*jeu.pinky.size*MULTI);
+		pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
 	}
 	private void renderGhost() {
 		//Mise a jour de la position de blinky
@@ -547,19 +652,20 @@ public class ViewJeu extends Stage{
 		pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
 	}
 	
-	private boolean showingPath = false;
+	private boolean showingPath = true;
 	final Timeline timelinePath = new Timeline(
 	 	    new KeyFrame(
 	 	        Duration.millis( 250 ),
 	 	        event -> {
 	 	        	if(showingPath && jeu.multiplayer != Muliplayer.CLIENT) {
-	 	        		paths.values().forEach(r->{
-	 	        			r.setFill(Color.BLACK);
-	 	        		});
+	 	        		//System.out.println("Path"); 
+	 	        		//paths.values().forEach(r->{
+	 	        		//	r.setFill(Color.BLACK);
+	 	        		//});
 	 	        		List<Node> nodesBlinky = jeu.pathMap.findPath(jeu.blinky.x.intValue(), jeu.blinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
-	 	        		nodesBlinky.forEach(n->{
-	 	        			paths.get(n.getX()+";"+n.getY()).setFill(Color.INDIANRED);
-	 	        		});
+	 	        		//nodesBlinky.forEach(n->{
+	 	        		//	paths.get(n.getX()+";"+n.getY()).setFill(Color.INDIANRED);
+	 	        		//});
 	 	        		jeu.moveBlinky(nodesBlinky.get(0).getX()+0.5, nodesBlinky.get(0).getY()+0.5);
 	 	        		List<Node> nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
 	 	        		try {
@@ -583,36 +689,22 @@ public class ViewJeu extends Stage{
         	        	}catch(Exception ex) {
         	        		nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
         	        	}
-	 	        		
+	 	        		if(nodesPinky == null || nodesPinky.isEmpty()) {
+	 	        			nodesPinky = jeu.pathMap.findPath(jeu.pinky.x.intValue(), jeu.pinky.y.intValue(), jeu.player.x.intValue(), jeu.player.y.intValue());
+	 	        		}
 	 	        		//nodesPinky.forEach(n->{
 	 	        		//	paths.get(n.getX()+";"+n.getY()).setFill(Color.PINK);
 	 	        		//});
-	 	        		paths.get(nodesPinky.get(0).getX()+";"+nodesPinky.get(0).getY()).setFill(Color.PINK);
+	 	        		//paths.get(nodesPinky.get(0).getX()+";"+nodesPinky.get(0).getY()).setFill(Color.PINK);
 	 	        		if(jeu.multiplayer == Muliplayer.SOLO) {
 	 	        			if(nodesPinky != null && !nodesPinky.isEmpty())
 	 	        				jeu.movePinky(nodesPinky.get(0).getX()+0.5, nodesPinky.get(0).getY()+0.5);
 	 	        		}
-
 	 	        	}	
 	        }
 	    )
 	);
-     	
-	
-	private void showPath() {
-		timelinePath.setCycleCount(Animation.INDEFINITE);
-		if(showingPath) {
-			showingPath = false;
-			timelinePath.stop();
-			paths.values().forEach(r->{
-				r.setFill(Color.BLACK);
-			});
-			
-		} else {
-			showingPath = true;		
-			timelinePath.play();
-		}
-	}
+
 	
 	/* SERVER */
 	private ServerSocket serverSocket;
@@ -626,7 +718,7 @@ public class ViewJeu extends Stage{
 	}
 
 	private void startServer() throws Exception {
-		System.out.println("Starting Server ...");
+		System.out.println("Starting Server .b.");
 		serverSocket = new ServerSocket(7777);
 		System.out.println("Server Started\nWaiting for connection ...");
 		socket = serverSocket.accept();
@@ -693,5 +785,59 @@ public class ViewJeu extends Stage{
 			root.getChildren().remove(g);
 			root.getChildren().add(g);
 		});
+	}
+	static HashMap<String, Integer> scores = new HashMap<String, Integer>();
+	private void loadScores() {
+		try
+        {
+            FileInputStream fis = new FileInputStream("Scores");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+ 
+            scoresperMap = (HashMap<String, HashMap<String, Integer>>) ois.readObject();
+            if(scoresperMap.containsKey(jeu.level.getName())) {
+            	scores = scoresperMap.get(jeu.level.getName());
+            }else {
+            	scores = new HashMap<>();
+            }
+            scores.forEach((k, v)->System.out.println(k+""+v));
+            ois.close();
+            fis.close();
+        }
+        catch (IOException ioe)
+        {
+            ioe.printStackTrace();
+        }
+        catch (ClassNotFoundException c)
+        {
+            System.out.println("Class not found");
+            c.printStackTrace();  
+        }
+	}
+	HashMap<String, HashMap<String, Integer>> scoresperMap = new HashMap<>();
+	private void saveScore() {
+		try
+        {
+            FileOutputStream fos = new FileOutputStream("Scores");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(scoresperMap);
+            oos.close();
+            fos.close();
+        }
+        catch (IOException ioe)
+        {
+            ioe.printStackTrace();
+        }
+	}
+	
+	private void validationScore() {
+		scores.remove("<SYSNON>");
+		if(!tf.getText().isEmpty()) {
+			scores.put(tf.getText(), jeu.score);
+			
+		}
+		scoresperMap.put(jeu.level.getName(), scores);
+		saveScore();
+		this.close();
+		Main.menu = new Menu();
 	}
 }

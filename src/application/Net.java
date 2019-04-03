@@ -24,6 +24,7 @@ public class Net {
 	 * Packet 3 : End
 	 * Packet 4 : Move
 	 * Packet 5 : Blinky Position
+	 * Packet 6 : PacMan Score
 	 * 
 	 * Packet 0 : Map datas
 	 * - int lenght
@@ -48,8 +49,9 @@ public class Net {
 		}
 	}
 	static Level level = null;
+	public static boolean already = false;
 	public static void startServer(int port) {
-		
+		if(already) return;
 		try {
 			System.out.println("Starting Server ...");
 			serverSocket = new ServerSocket(port);
@@ -83,16 +85,14 @@ public class Net {
 						}	
 					}catch (Exception ex) {
 						ex.printStackTrace();
-					}
-					
+					}	
 				}
 			});
 			
 		}catch(Exception ex) {
-			
+			ex.printStackTrace();
 		}
-		
-		
+		already = true;
 	}
 
 	public static void joinServer(String ip, int port) {

@@ -20,4 +20,8 @@ public class Gum extends Circle {
 	public int getValue() {
 		return value;
 	}
+	
+	public void execute() {
+		
+	}
 }

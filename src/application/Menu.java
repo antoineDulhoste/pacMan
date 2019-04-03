@@ -108,9 +108,11 @@ public class Menu extends Stage {
         t1.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-            	System.out.println("Start PacMan MULTI: SERVER");
-            	Net.startServer(7778);
-            	
+            	//System.out.println("Start PacMan MULTI: SERVER");
+            	//Net.startServer(7778);
+            	compteur = 3;
+            	menuRemove(2);
+            	menuConfigServer();
             }
         });
         root.getChildren().add(t1);
@@ -236,7 +238,7 @@ public class Menu extends Stage {
         Text t2 = new Text();
         t2.setText("CARTE:");
         t2.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
-        t2.setX(130);
+        t2.setX(100);
         t2.setY(570);
         t2.setFill(Color.WHITE);
         root.getChildren().add(t2);
@@ -251,7 +253,7 @@ public class Menu extends Stage {
         t3.setText("VALIDER");
         t3.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
         t3.setX(130);
-        t3.setY(550);
+        t3.setY(650);
         t3.setFill(Color.WHITE);
         t3.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override

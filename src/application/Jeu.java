@@ -29,15 +29,18 @@ public class Jeu extends Observable{
 		switch(multiplayer) {
 		case SERVER:
 			this.level = level;
+			System.out.println("Listen");
 			serverListen();
 			
 			this.player = new PacMan(level.getPlayerX()+0.5, level.getPlayerY()+0.5);
 			this.pinky = new Pinky(level.getPinkyX()+0.5, level.getPinkyY()+0.5, level.getMap());
 			this.blinky = new Blinky(level.getBlinkyX()+0.5, level.getBlinkyY()+0.5, level.getMap());
 			this.pathMap = new PathMap(level.map);
-			Net.sendData(level.netToString());
 			
+			System.out.println("Call");
 			viewCall();
+			
+			Net.sendData(level.netToString());
 			break;
 		case CLIENT:
 			this.player = new PacMan(0.0, 0.0);
@@ -97,6 +100,7 @@ public class Jeu extends Observable{
 	
 	public void removeGum(Gum gum) {
 		score += gum.getValue();
+		gum.execute();
 		gums.remove(gum);
 		setChanged();
 		notifyObservers(gum);
@@ -127,7 +131,6 @@ public class Jeu extends Observable{
 	
 	public boolean canMoveHorizontally(Double addX) {
 		boolean sortie = true;
-		
 		if(addX > 0) {
 			Double x = player.x + 0.495;
 			x+=addX;
@@ -193,14 +196,6 @@ public class Jeu extends Observable{
 	
 	public String ServerSendData() {
 		return player.x+";"+player.y;
-	}
-	
-	public void ClientReceiveData(String str) {
-		String[] list = str.split(";");
-		player.x = Double.parseDouble(list[0]);
-		player.y = Double.parseDouble(list[1]);
-		setChanged();
-		notifyObservers();
 	}
 	
 	public String ClientSendData() {
@@ -304,5 +299,15 @@ public class Jeu extends Observable{
 			}
 		});
 		
+	}
+	
+	public boolean isServer() {
+		return multiplayer == Muliplayer.SERVER;
+	}
+	public boolean isSolo() {
+		return multiplayer == Muliplayer.SOLO;
+	}
+	public boolean isClient() {
+		return multiplayer == Muliplayer.CLIENT;
 	}
 }
