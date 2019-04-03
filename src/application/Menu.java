@@ -27,6 +27,7 @@ public class Menu extends Stage {
 	private Scene scene;
 	private Group root = new Group();
 	private int compteur=0;
+	private Timeline timeline;
 	
 	public Timeline getTimeline() {
 		return timeline;
@@ -43,13 +44,12 @@ public class Menu extends Stage {
 	public Group getRoot() {
 		return root;
 	}
-
-	private Timeline timeline;
 	
 	public Menu() {
 		this.start();
 	}
-	public void t1() {
+	
+	public void textEntrer() {
 		Text t1 = new Text();
         t1.setText("press ENTER \n"
         		+ "  to START");
@@ -82,7 +82,7 @@ public class Menu extends Stage {
         Image image = new Image(imageURI);
         ImageView imageView = new ImageView(image);
         root.getChildren().add(imageView);
-        t1();
+        textEntrer();
         //ajout de la detection de la touche entree
         scene.addEventFilter(KeyEvent.KEY_PRESSED,new ActionEntree(this));
         scene.addEventFilter(KeyEvent.KEY_PRESSED,new ActionEchap(this));
@@ -142,7 +142,7 @@ public class Menu extends Stage {
             	close();
             	try {
         			Jeu jeu = new Jeu();
-        			ViewJeu vj = new ViewJeu(jeu);
+        			new ViewJeu(jeu);
         		} catch(Exception e) {
         			e.printStackTrace();
         		}

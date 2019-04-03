@@ -6,9 +6,4 @@ public class Blinky extends Ghost {
 		super(x, y, plateau);
 	}
 
-	@Override
-	public void run() {
-		
-	}
-
 }

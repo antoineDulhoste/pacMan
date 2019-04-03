@@ -1,6 +1,6 @@
 package application;
 
-public abstract class Ghost extends Entite implements Runnable {
+public abstract class Ghost extends Entite {
 
 	private int[][] plateau;
 	
@@ -9,8 +9,6 @@ public abstract class Ghost extends Entite implements Runnable {
 		this.plateau = plateau;
 	}
 	
-	@Override
-	public abstract void run();
 	
 	public boolean canMoveVertically(Double addY) {
 		if(addY > 0) {
