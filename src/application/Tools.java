@@ -1,9 +1,32 @@
 package application;
 
+import java.util.function.UnaryOperator;
+
+import javafx.scene.control.TextFormatter;
 import javafx.scene.paint.Color;
 
 public class Tools {
 	
+	 public static final UnaryOperator<TextFormatter.Change> FILTER = new UnaryOperator<TextFormatter.Change>(){
+
+         @Override
+         public TextFormatter.Change apply(TextFormatter.Change t) {
+             if (t.isReplaced() && t.getText().matches("[^0-9]")) {
+                 t.setText(t.getControlText().substring(t.getRangeStart(), t.getRangeEnd()));
+             }
+             if (t.isAdded()) {
+                 if (t.getControlText().contains(".")) {
+                     if (t.getText().matches("[^0-9]")) {
+                         t.setText("");
+                     }
+                 } else if (t.getText().matches("[^0-9\\.]")) {
+                     t.setText("");
+                 }
+             }
+             return t;
+         }
+     };;
+	 
 	public static Color[] rainbow = {
 			Color.web("#ff0000"),
 			Color.web("#ff0400"),

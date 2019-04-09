@@ -23,12 +23,14 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -62,8 +64,8 @@ public class ViewJeu extends Stage{
 	
 	/* Threads */
 	AnimationTimer ATCoins;
-	MediaPlayer mediaplayer;
-	Thread TMusique = new Thread(new Runnable() {
+	static MediaPlayer mediaplayer;
+	static Thread TMusique = new Thread(new Runnable() {
 		@Override
 		public void run() {
 			try{
@@ -77,6 +79,8 @@ public class ViewJeu extends Stage{
 	    	   }
 		}
 	});;
+	Timeline timelineSpriteAnimation;
+	int PacSprite = 1;
 	Timeline timelineDeplacements;
 	Timeline wallAnimation;
 	Timeline timelineGameOver;
@@ -84,6 +88,97 @@ public class ViewJeu extends Stage{
 	/** Final Timelines **/
 	Timeline TLPathFinding;
 		
+	/* Sprites */
+	Image PMR1 = new Image("Sprites/PMR1.jpg");
+	Image PMR2 = new Image("Sprites/PMR2.jpg");
+	Image PMR3 = new Image("Sprites/PMR3.jpg");
+	Image PMR4 = new Image("Sprites/PMR4.jpg");
+	Image PMR5 = new Image("Sprites/PMR5.jpg");
+	Image PMR6 = new Image("Sprites/PMR6.jpg");
+	
+	Image PML1 = new Image("Sprites/PML1.jpg");
+	Image PML2 = new Image("Sprites/PML2.jpg");
+	Image PML3 = new Image("Sprites/PML3.jpg");
+	Image PML4 = new Image("Sprites/PML4.jpg");
+	Image PML5 = new Image("Sprites/PML5.jpg");
+	Image PML6 = new Image("Sprites/PML6.jpg");
+	
+	Image PMU1 = new Image("Sprites/PMU1.jpg");
+	Image PMU2 = new Image("Sprites/PMU2.jpg");
+	Image PMU3 = new Image("Sprites/PMU3.jpg");
+	Image PMU4 = new Image("Sprites/PMU4.jpg");
+	Image PMU5 = new Image("Sprites/PMU5.jpg");
+	Image PMU6 = new Image("Sprites/PMU6.jpg");
+	
+	Image PMD1 = new Image("Sprites/PMD1.jpg");
+	Image PMD2 = new Image("Sprites/PMD2.jpg");
+	Image PMD3 = new Image("Sprites/PMD3.jpg");
+	Image PMD4 = new Image("Sprites/PMD4.jpg");
+	Image PMD5 = new Image("Sprites/PMD5.jpg");
+	Image PMD6 = new Image("Sprites/PMD6.jpg");
+	
+	Image PMGO1 = new Image("Sprites/PMGO1.jpg");
+	Image PMGO2 = new Image("Sprites/PMGO2.jpg");
+	Image PMGO3 = new Image("Sprites/PMGO3.jpg");
+	Image PMGO4 = new Image("Sprites/PMGO4.jpg");
+	Image PMGO5 = new Image("Sprites/PMGO5.jpg");
+	Image PMGO6 = new Image("Sprites/PMGO6.jpg");
+	
+	Image PinkyDown1 = new Image("Sprites/PinkyDown1.jpg");
+	Image PinkyDown2 = new Image("Sprites/PinkyDown2.jpg");
+	Image PinkyDown3 = new Image("Sprites/PinkyDown3.jpg");
+	Image PinkyDown4 = new Image("Sprites/PinkyDown4.jpg");
+	Image PinkyDown5 = new Image("Sprites/PinkyDown5.jpg");
+	Image PinkyDown6 = new Image("Sprites/PinkyDown6.jpg");
+	
+	Image PinkyUp1 = new Image("Sprites/PinkyUp1.jpg");
+	Image PinkyUp2 = new Image("Sprites/PinkyUp2.jpg");
+	Image PinkyUp3 = new Image("Sprites/PinkyUp3.jpg");
+	Image PinkyUp4 = new Image("Sprites/PinkyUp4.jpg");
+	Image PinkyUp5 = new Image("Sprites/PinkyUp5.jpg");
+	Image PinkyUp6 = new Image("Sprites/PinkyUp6.jpg");
+	
+	Image PinkyLeft1 = new Image("Sprites/PinkyLeft1.jpg");
+	Image PinkyLeft2 = new Image("Sprites/PinkyLeft2.jpg");
+	Image PinkyLeft3 = new Image("Sprites/PinkyLeft3.jpg");
+	Image PinkyLeft4 = new Image("Sprites/PinkyLeft4.jpg");
+	Image PinkyLeft5 = new Image("Sprites/PinkyLeft5.jpg");
+	Image PinkyLeft6 = new Image("Sprites/PinkyLeft6.jpg");
+	
+	Image PinkyRight1 = new Image("Sprites/PinkyRight1.jpg");
+	Image PinkyRight2 = new Image("Sprites/PinkyRight2.jpg");
+	Image PinkyRight3 = new Image("Sprites/PinkyRight3.jpg");
+	Image PinkyRight4 = new Image("Sprites/PinkyRight4.jpg");
+	Image PinkyRight5 = new Image("Sprites/PinkyRight5.jpg");
+	Image PinkyRight6 = new Image("Sprites/PinkyRight6.jpg");
+	
+	Image BlinkyDown1 = new Image("Sprites/BlinkyDown1.jpg");
+	Image BlinkyDown2 = new Image("Sprites/BlinkyDown2.jpg");
+	Image BlinkyDown3 = new Image("Sprites/BlinkyDown3.jpg");
+	Image BlinkyDown4 = new Image("Sprites/BlinkyDown4.jpg");
+	Image BlinkyDown5 = new Image("Sprites/BlinkyDown5.jpg");
+	Image BlinkyDown6 = new Image("Sprites/BlinkyDown6.jpg");
+	
+	Image BlinkyUp1 = new Image("Sprites/BlinkyUp1.jpg");
+	Image BlinkyUp2 = new Image("Sprites/BlinkyUp2.jpg");
+	Image BlinkyUp3 = new Image("Sprites/BlinkyUp3.jpg");
+	Image BlinkyUp4 = new Image("Sprites/BlinkyUp4.jpg");
+	Image BlinkyUp5 = new Image("Sprites/BlinkyUp5.jpg");
+	Image BlinkyUp6 = new Image("Sprites/BlinkyUp6.jpg");
+	
+	Image BlinkyLeft1 = new Image("Sprites/BlinkyLeft1.jpg");
+	Image BlinkyLeft2 = new Image("Sprites/BlinkyLeft2.jpg");
+	Image BlinkyLeft3 = new Image("Sprites/BlinkyLeft3.jpg");
+	Image BlinkyLeft4 = new Image("Sprites/BlinkyLeft4.jpg");
+	Image BlinkyLeft5 = new Image("Sprites/BlinkyLeft5.jpg");
+	Image BlinkyLeft6 = new Image("Sprites/BlinkyLeft6.jpg");
+	
+	Image BlinkyRight1 = new Image("Sprites/BlinkyRight1.jpg");
+	Image BlinkyRight2 = new Image("Sprites/BlinkyRight2.jpg");
+	Image BlinkyRight3 = new Image("Sprites/BlinkyRight3.jpg");
+	Image BlinkyRight4 = new Image("Sprites/BlinkyRight4.jpg");
+	Image BlinkyRight5 = new Image("Sprites/BlinkyRight5.jpg");
+	Image BlinkyRight6 = new Image("Sprites/BlinkyRight6.jpg");
 	public ViewJeu(Jeu jeu, Muliplayer muliplayer) {
 		Main.menu.close();
 		this.jeu = jeu;
@@ -126,16 +221,350 @@ public class ViewJeu extends Stage{
 		
 		/*Dessine le joueur*/
 		player = new Circle(jeu.player.y*jeu.player.size*MULTI, jeu.player.x*jeu.player.size*MULTI, jeu.player.rayon*MULTI);
-		player.setFill(Color.YELLOW);
+		//player.setFill(Color.YELLOW);
 		root.getChildren().add(player);
+		if(jeu.isServer() || jeu.isSolo()) {
+        	player.setFill(new ImagePattern(PMR1));
+        }else {
+        	player.setFill(new ImagePattern(PinkyUp1));
+        }
 		
-		blinky = new Circle(jeu.blinky.y*jeu.blinky.size*MULTI, jeu.blinky.x*jeu.blinky.size*MULTI, jeu.blinky.rayon*MULTI);
-        blinky.setFill(Color.RED);
+        blinky = new Circle(jeu.blinky.y*jeu.blinky.size*MULTI, jeu.blinky.x*jeu.blinky.size*MULTI, jeu.blinky.rayon*MULTI);
+        blinky.setFill(new ImagePattern(BlinkyDown1));       
         root.getChildren().add(blinky); 
         
         pinky = new Circle(jeu.pinky.y*jeu.pinky.size*MULTI, jeu.pinky.x*jeu.pinky.size*MULTI, jeu.pinky.rayon*MULTI);
-        pinky.setFill(Color.DEEPPINK);
+        if(jeu.isServer() || jeu.isSolo()) {
+        	pinky.setFill(new ImagePattern(PinkyUp1));
+        }else {
+        	pinky.setFill(new ImagePattern(PMR1));
+        }
         root.getChildren().add(pinky); 
+        
+        timelineSpriteAnimation = new Timeline(
+        	    new KeyFrame(
+        	        Duration.millis( 100 ),
+        	        event -> {
+        	        	if(PacSprite == 1) {   
+        	        		if(jeu.isClient()) {
+        	        			if(jeu.netDir == 2) {
+            	                	pinky.setFill(new ImagePattern(PMD1));
+            	            	} else if(jeu.netDir == 4) {
+            	            		pinky.setFill(new ImagePattern(PMU1));
+            	            	} else if(jeu.netDir == 1) {
+            	            		pinky.setFill(new ImagePattern(PML1));
+            	            	}else if(jeu.netDir == 3) {
+            	            		pinky.setFill(new ImagePattern(PMR1));
+            	            	}
+        	        			if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PinkyDown1));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PinkyUp1));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PinkyLeft1));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PinkyRight1));
+	        	            	}
+        	        		}else {
+        	        			if(jeu.player.dir == 2) {
+            	                	player.setFill(new ImagePattern(PMD1));
+            	            	} else if(jeu.player.dir == 4) {
+            	            		player.setFill(new ImagePattern(PMU1));
+            	            	} else if(jeu.player.dir == 1) {
+            	            		player.setFill(new ImagePattern(PML1));
+            	            	}else if(jeu.player.dir == 3) {
+            	            		player.setFill(new ImagePattern(PMR1));
+            	            	}
+        	        			if(jeu.isServer()) {
+	        	        			if(jeu.netDir == 2) {
+	            	                	pinky.setFill(new ImagePattern(PinkyDown1));
+	            	            	} else if(jeu.netDir == 4) {
+	            	            		pinky.setFill(new ImagePattern(PinkyUp1));
+	            	            	} else if(jeu.netDir == 1) {
+	            	            		pinky.setFill(new ImagePattern(PinkyLeft1));
+	            	            	}else if(jeu.netDir == 3) {
+	            	            		pinky.setFill(new ImagePattern(PinkyRight1));
+	            	            	}
+	        	        		}
+        	        		}
+        	        		if(jeu.blinkyDir == 2) {
+        	                	blinky.setFill(new ImagePattern(BlinkyDown1));
+        	            	} else if(jeu.blinkyDir == 4) {
+        	            		blinky.setFill(new ImagePattern(BlinkyUp1));
+        	            	} else if(jeu.blinkyDir == 1) {
+        	            		blinky.setFill(new ImagePattern(BlinkyLeft1));
+        	            	}else if(jeu.blinkyDir == 3) {
+        	            		blinky.setFill(new ImagePattern(BlinkyRight1));
+        	            	}
+        	                PacSprite = 2;
+        	        	}else if(PacSprite == 2) {
+        	        		if(jeu.isClient()) {
+        	        			if(jeu.netDir == 2) {
+            	                	pinky.setFill(new ImagePattern(PMD2));
+            	            	} else if(jeu.netDir == 4) {
+            	            		pinky.setFill(new ImagePattern(PMU2));
+            	            	} else if(jeu.netDir == 1) {
+            	            		pinky.setFill(new ImagePattern(PML2));
+            	            	}else if(jeu.netDir == 3) {
+            	            		pinky.setFill(new ImagePattern(PMR2));
+            	            	}
+        	        			if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PinkyDown2));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PinkyUp2));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PinkyLeft2));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PinkyRight2));
+	        	            	}
+        	        		}else {
+	        	        		if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PMD2));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PMU2));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PML2));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PMR2));
+	        	            	}
+	        	        		if(jeu.isServer()) {
+	        	        			if(jeu.netDir == 2) {
+	            	                	pinky.setFill(new ImagePattern(PinkyDown2));
+	            	            	} else if(jeu.netDir == 4) {
+	            	            		pinky.setFill(new ImagePattern(PinkyUp2));
+	            	            	} else if(jeu.netDir == 1) {
+	            	            		pinky.setFill(new ImagePattern(PinkyLeft2));
+	            	            	}else if(jeu.netDir == 3) {
+	            	            		pinky.setFill(new ImagePattern(PinkyRight2));
+	            	            	}
+	        	        		}
+        	        		}
+        	        		if(jeu.blinkyDir == 2) {
+        	                	blinky.setFill(new ImagePattern(BlinkyDown2));
+        	            	} else if(jeu.blinkyDir == 4) {
+        	            		blinky.setFill(new ImagePattern(BlinkyUp2));
+        	            	} else if(jeu.blinkyDir == 1) {
+        	            		blinky.setFill(new ImagePattern(BlinkyLeft2));
+        	            	}else if(jeu.blinkyDir == 3) {
+        	            		blinky.setFill(new ImagePattern(BlinkyRight2));
+        	            	}
+        	                PacSprite = 3;
+        	        	}else if(PacSprite == 3) {
+        	        		if(jeu.isClient()) {
+        	        			if(jeu.netDir == 2) {
+            	                	pinky.setFill(new ImagePattern(PMD3));
+            	            	} else if(jeu.netDir == 4) {
+            	            		pinky.setFill(new ImagePattern(PMU3));
+            	            	} else if(jeu.netDir == 1) {
+            	            		pinky.setFill(new ImagePattern(PML3));
+            	            	}else if(jeu.netDir == 3) {
+            	            		pinky.setFill(new ImagePattern(PMR3));
+            	            	}
+        	        			if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PinkyDown3));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PinkyUp3));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PinkyLeft3));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PinkyRight3));
+	        	            	}
+        	        		}else {
+	        	        		if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PMD3));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PMU3));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PML3));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PMR3));
+	        	            	}
+	        	        		if(jeu.isServer()) {
+	        	        			if(jeu.netDir == 2) {
+	            	                	pinky.setFill(new ImagePattern(PinkyDown3));
+	            	            	} else if(jeu.netDir == 4) {
+	            	            		pinky.setFill(new ImagePattern(PinkyUp3));
+	            	            	} else if(jeu.netDir == 1) {
+	            	            		pinky.setFill(new ImagePattern(PinkyLeft3));
+	            	            	}else if(jeu.netDir == 3) {
+	            	            		pinky.setFill(new ImagePattern(PinkyRight3));
+	            	            	}
+	        	        		}
+        	        		}
+        	        		if(jeu.blinkyDir == 2) {
+        	                	blinky.setFill(new ImagePattern(BlinkyDown3));
+        	            	} else if(jeu.blinkyDir == 4) {
+        	            		blinky.setFill(new ImagePattern(BlinkyUp3));
+        	            	} else if(jeu.blinkyDir == 1) {
+        	            		blinky.setFill(new ImagePattern(BlinkyLeft3));
+        	            	}else if(jeu.blinkyDir == 3) {
+        	            		blinky.setFill(new ImagePattern(BlinkyRight3));
+        	            	}
+        	                PacSprite = 4;
+        	        	}else if(PacSprite == 4) {
+        	        		if(jeu.isClient()) {
+        	        			if(jeu.netDir == 2) {
+            	                	pinky.setFill(new ImagePattern(PMD4));
+            	            	} else if(jeu.netDir == 4) {
+            	            		pinky.setFill(new ImagePattern(PMU4));
+            	            	} else if(jeu.netDir == 1) {
+            	            		pinky.setFill(new ImagePattern(PML4));
+            	            	}else if(jeu.netDir == 3) {
+            	            		pinky.setFill(new ImagePattern(PMR4));
+            	            	}
+        	        			if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PinkyDown4));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PinkyUp4));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PinkyLeft4));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PinkyRight4));
+	        	            	}
+        	        		}else {
+	        	        		if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PMD4));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PMU4));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PML4));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PMR4));
+	        	            	}
+	        	        		if(jeu.isServer()) {
+	        	        			if(jeu.netDir == 2) {
+	            	                	pinky.setFill(new ImagePattern(PinkyDown4));
+	            	            	} else if(jeu.netDir == 4) {
+	            	            		pinky.setFill(new ImagePattern(PinkyUp4));
+	            	            	} else if(jeu.netDir == 1) {
+	            	            		pinky.setFill(new ImagePattern(PinkyLeft4));
+	            	            	}else if(jeu.netDir == 3) {
+	            	            		pinky.setFill(new ImagePattern(PinkyRight4));
+	            	            	}
+	        	        		}
+        	        		}
+        	        		if(jeu.blinkyDir == 2) {
+        	                	blinky.setFill(new ImagePattern(BlinkyDown4));
+        	            	} else if(jeu.blinkyDir == 4) {
+        	            		blinky.setFill(new ImagePattern(BlinkyUp4));
+        	            	} else if(jeu.blinkyDir == 1) {
+        	            		blinky.setFill(new ImagePattern(BlinkyLeft4));
+        	            	}else if(jeu.blinkyDir == 3) {
+        	            		blinky.setFill(new ImagePattern(BlinkyRight4));
+        	            	}
+        	                PacSprite = 5;
+        	        	}else if(PacSprite == 5) {
+        	        		if(jeu.isClient()) {
+        	        			if(jeu.netDir == 2) {
+            	                	pinky.setFill(new ImagePattern(PMD5));
+            	            	} else if(jeu.netDir == 4) {
+            	            		pinky.setFill(new ImagePattern(PMU5));
+            	            	} else if(jeu.netDir == 1) {
+            	            		pinky.setFill(new ImagePattern(PML5));
+            	            	}else if(jeu.netDir == 3) {
+            	            		pinky.setFill(new ImagePattern(PMR5));
+            	            	}
+        	        			if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PinkyDown5));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PinkyUp5));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PinkyLeft5));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PinkyRight5));
+	        	            	}
+        	        		}else {
+	        	        		if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PMD5));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PMU5));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PML5));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PMR5));
+	        	            	}
+	        	        		if(jeu.isServer()) {
+	        	        			if(jeu.netDir == 2) {
+	            	                	pinky.setFill(new ImagePattern(PinkyDown5));
+	            	            	} else if(jeu.netDir == 4) {
+	            	            		pinky.setFill(new ImagePattern(PinkyUp5));
+	            	            	} else if(jeu.netDir == 1) {
+	            	            		pinky.setFill(new ImagePattern(PinkyLeft5));
+	            	            	}else if(jeu.netDir == 3) {
+	            	            		pinky.setFill(new ImagePattern(PinkyRight5));
+	            	            	}
+	        	        		}
+        	        		}
+        	        		if(jeu.blinkyDir == 2) {
+        	                	blinky.setFill(new ImagePattern(BlinkyDown5));
+        	            	} else if(jeu.blinkyDir == 4) {
+        	            		blinky.setFill(new ImagePattern(BlinkyUp5));
+        	            	} else if(jeu.blinkyDir == 1) {
+        	            		blinky.setFill(new ImagePattern(BlinkyLeft5));
+        	            	}else if(jeu.blinkyDir == 3) {
+        	            		blinky.setFill(new ImagePattern(BlinkyRight5));
+        	            	}
+        	                PacSprite = 6;
+        	        	}else {
+        	        		if(jeu.isClient()) {
+        	        			if(jeu.netDir == 2) {
+            	                	pinky.setFill(new ImagePattern(PMD6));
+            	            	} else if(jeu.netDir == 4) {
+            	            		pinky.setFill(new ImagePattern(PMU6));
+            	            	} else if(jeu.netDir == 1) {
+            	            		pinky.setFill(new ImagePattern(PML6));
+            	            	}else if(jeu.netDir == 3) {
+            	            		pinky.setFill(new ImagePattern(PMR6));
+            	            	}
+        	        			if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PinkyDown6));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PinkyUp6));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PinkyLeft6));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PinkyRight6));
+	        	            	}
+        	        		}else {
+	        	        		if(jeu.player.dir == 2) {
+	        	        			player.setFill(new ImagePattern(PMD6));
+	        	            	} else if(jeu.player.dir == 4) {
+	        	            		player.setFill(new ImagePattern(PMU6));
+	        	            	} else if(jeu.player.dir == 1) {
+	        	            		player.setFill(new ImagePattern(PML6));
+	        	            	}else if(jeu.player.dir == 3) {
+	        	            		player.setFill(new ImagePattern(PMR6));
+	        	            	}
+	        	        		if(jeu.isServer()) {
+	        	        			if(jeu.netDir == 2) {
+	            	                	pinky.setFill(new ImagePattern(PinkyDown6));
+	            	            	} else if(jeu.netDir == 4) {
+	            	            		pinky.setFill(new ImagePattern(PinkyUp6));
+	            	            	} else if(jeu.netDir == 1) {
+	            	            		pinky.setFill(new ImagePattern(PinkyLeft6));
+	            	            	}else if(jeu.netDir == 3) {
+	            	            		pinky.setFill(new ImagePattern(PinkyRight6));
+	            	            	}
+	        	        		}
+        	        		}
+        	        		if(jeu.blinkyDir == 2) {
+        	                	blinky.setFill(new ImagePattern(BlinkyDown6));
+        	            	} else if(jeu.blinkyDir == 4) {
+        	            		blinky.setFill(new ImagePattern(BlinkyUp6));
+        	            	} else if(jeu.blinkyDir == 1) {
+        	            		blinky.setFill(new ImagePattern(BlinkyLeft6));
+        	            	}else if(jeu.blinkyDir == 3) {
+        	            		blinky.setFill(new ImagePattern(BlinkyRight6));
+        	            	}
+        	                PacSprite = 1;
+        	        	}
+        	        }
+        	    )
+        	);
+        timelineSpriteAnimation.setCycleCount( Animation.INDEFINITE );
+        timelineSpriteAnimation.play();
+        
+		
         
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
@@ -145,15 +574,14 @@ public class ViewJeu extends Stage{
                     case DOWN:  jeu.player.dirWanted = 2; break;
                     case LEFT:  jeu.player.dirWanted = 1; break;
                     case RIGHT: jeu.player.dirWanted = 3; break; 
-                    case ENTER: if(!gameover) {
-			                    	GameOver(); 
-			                    	if(jeu.multiplayer == Muliplayer.SERVER) {
+                    case ENTER: if(!gameover) {	
+			                    	if(jeu.isServer()) {
 			            				Net.sendData("3/GHOST");
 			            			} else if(jeu.multiplayer == Muliplayer.CLIENT) {
 			            				Net.sendData("3/PACMAN");
-			            			}
-			                    } else validationScore();
-                    			
+			            			} else if(jeu.isSolo()) jeu.victoire = TypeVictoires.GHOST;
+			                    	GameOver(); 
+			                    } else validationScore();		
                     			break;
 					default:
 						break;
@@ -185,6 +613,7 @@ public class ViewJeu extends Stage{
                 if(jeu.gums.isEmpty()) {
                 	/* Si jeu en multi il faut avertir l'autre joueur */
                 	if(jeu.isServer()) Net.sendData("3/PACMAN");
+                	if(jeu.isSolo()) jeu.victoire = TypeVictoires.PACMAN;
                 	/* On execute l'animation de GameOver et on fini la partie */
                 	GameOver();
                 }
@@ -194,21 +623,11 @@ public class ViewJeu extends Stage{
         if(!jeu.isClient()) ATCoins.start();
         
         /* Thread concernant la musique */
-        TMusique = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try{
-		    		String uriString = new File("song.mp3").toURI().toString();
-		    		mediaplayer = new MediaPlayer(new Media(uriString));
-		    		mediaplayer.setAutoPlay(true);
-		    		mediaplayer.setVolume(0.01);
-		    		mediaplayer.setCycleCount(MediaPlayer.INDEFINITE);
-		    	    }catch(Exception ex){ 
-		    		   ex.printStackTrace();
-		    	   }
-			}
-		});
-        TMusique.start();
+        try {
+        	TMusique.start();
+        }catch(Exception ex) {
+        	ex.printStackTrace();
+        }
         
         	timelineDeplacements = new Timeline(
             	    new KeyFrame(
@@ -265,7 +684,7 @@ public class ViewJeu extends Stage{
         		            			moved = true;
         		            		}
         		            	}
-        	            	}
+        	            	}	
             	        }
             	    )
             	);
@@ -287,13 +706,11 @@ public class ViewJeu extends Stage{
     			jeu.player.x = x;
     			jeu.player.y = y;
     			
-    			pinky.setFill(Color.YELLOW);
-    			player.setFill(Color.YELLOW);
+    			pinky.setFill(new ImagePattern(PMU1));
+    			player.setFill(new ImagePattern(PinkyDown1));
     			renderPlayer();
     			renderGhost();
     		}
-        
-		
         
 		wallAnimation = new Timeline(
 	        	    new KeyFrame(
@@ -308,7 +725,7 @@ public class ViewJeu extends Stage{
 	        	    )
 	        	);
 		wallAnimation.setCycleCount( Animation.INDEFINITE );
-		//wallAnimation.play();
+		wallAnimation.play();
 		
 		timelineGameOver = new Timeline(
 	        	    new KeyFrame(
@@ -320,7 +737,8 @@ public class ViewJeu extends Stage{
 	                        	Platform.runLater(new Runnable() {		
 									@Override
 									public void run() {
-										if(jeu.multiplayer == Muliplayer.SERVER) Net.sendData("3/BLINKY");
+										if(jeu.isServer()) Net.sendData("3/GHOST"); jeu.victoire = TypeVictoires.GHOST;
+										if(jeu.isSolo()) jeu.victoire = TypeVictoires.GHOST;
 										GameOver();		
 									}
 								});
@@ -332,7 +750,8 @@ public class ViewJeu extends Stage{
 	                        	Platform.runLater(new Runnable() {		
 									@Override
 									public void run() {
-										if(jeu.multiplayer == Muliplayer.SERVER) Net.sendData("3/BLINKY");
+										if(jeu.isServer()) Net.sendData("3/GHOST"); jeu.victoire = TypeVictoires.GHOST;
+										if(jeu.isSolo()) jeu.victoire = TypeVictoires.GHOST;
 										GameOver();		
 									}
 								});
@@ -416,6 +835,7 @@ public class ViewJeu extends Stage{
 		
 		String imageURI = new File("icone.png").toURI().toString(); 
 		Image image = new Image(imageURI);
+		this.getIcons().add(image);
 		scene.addEventFilter(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
 			private boolean b=true;
 			@Override
@@ -453,33 +873,52 @@ public class ViewJeu extends Stage{
 		}
 	}
 	
-	private void startMusique() {
-		mediaplayer.play();
-	}
-	
-	private void stopMusique() {
-		mediaplayer.stop();
-	}
-	
-	private void startAllThread() {
-		ATCoins.start();
-		timelineDeplacements.play();
-		timelineGameOver.play();
-	}
-	
 	private void stopAllThread() {
 		ATCoins.stop();
 		timelineGameOver.stop();
 		timelineDeplacements.stop();
+		timelineSpriteAnimation.stop();
 	}
 	TextField tf = new TextField();
 	private void GameOver() {
-			gameover = true;
-			jeu.switchOver();
+		 System.out.println(jeu.victoire);
+		 gameover = true;
+		 jeu.switchOver();
 		 stopAllThread();
 		 for(Rectangle r : paths) root.getChildren().remove(r);
 		 for(Gum c : jeu.gums) root.getChildren().remove(c);
 		 root.getChildren().remove(scoreJeu);
+		 PacSprite = 1;
+		 timelineSpriteAnimation = new Timeline(
+	        	    new KeyFrame(
+	        	        Duration.millis( 250 ),
+	        	        event -> {
+	        	        	if(PacSprite == 1) {               
+	        	        		player.setFill(new ImagePattern(PMGO1));
+	        	                PacSprite = 2;
+	        	        	}else if(PacSprite == 2) {
+	        	        		player.setFill(new ImagePattern(PMGO2));
+	        	                PacSprite = 3;
+	        	        	}else if(PacSprite == 3) {
+	        	        		player.setFill(new ImagePattern(PMGO3));
+	        	                PacSprite = 4;
+	        	        	}else if(PacSprite == 4) {
+	        	        		player.setFill(new ImagePattern(PMGO4));
+	        	                PacSprite = 5;
+	        	        	}else if(PacSprite == 5) {
+	        	        		player.setFill(new ImagePattern(PMGO5));
+	        	                PacSprite = 6;
+	        	        	}else {
+	        	        		player.setFill(new ImagePattern(PMGO6));
+	        	                PacSprite = 2;
+	        	        	}
+	        	        }
+	        	    )
+	        	);
+	        timelineSpriteAnimation.setCycleCount( Animation.INDEFINITE );
+	        if(jeu.victoire == TypeVictoires.GHOST) {
+	        	timelineSpriteAnimation.play();
+	        }
 		 final Timeline timeline = new Timeline(
 	        	    new KeyFrame(
 	        	        Duration.millis( 20 ),
@@ -490,17 +929,19 @@ public class ViewJeu extends Stage{
 	        	    				root.getChildren().remove(r);	        	    				
 	        	    			}
 	        	    		}
-	        	        	if (jeu.player.dir == 4) {
-	                    		jeu.player.x -= 0.1;
-	                        } else if (jeu.player.dir == 2) {
-	                        	jeu.player.x += 0.1;
-	                        } else if (jeu.player.dir == 1) {
-	                        	jeu.player.y -= 0.1;
-	                        } else if (jeu.player.dir == 3) {
-	                        	jeu.player.y += 0.1;
-	                        } else jeu.player.y += 0.1;
-	        	        	renderPlayer();
-	        	        	
+	        	        	if(jeu.victoire == TypeVictoires.PACMAN) {
+	        	        		if (jeu.player.dir == 4) {
+		                    		jeu.player.x -= 0.1;
+		                        } else if (jeu.player.dir == 2) {
+		                        	jeu.player.x += 0.1;
+		                        } else if (jeu.player.dir == 1) {
+		                        	jeu.player.y -= 0.1;
+		                        } else if (jeu.player.dir == 3) {
+		                        	jeu.player.y += 0.1;
+		                        } else jeu.player.y += 0.1;
+		        	        	renderPlayer();
+	        	        	}
+
 	        	        	if (jeu.pinky.dir == 4) {
 	                    		jeu.pinky.x -= 0.1;
 	                        } else if (jeu.pinky.dir == 2) {
@@ -545,6 +986,7 @@ public class ViewJeu extends Stage{
 	        	}else {
 	        		victoire = new Text("Victoire des Fantomes");
 	        	}
+	        	if(jeu.isClient()) victoire.setText("Victoire de "+jeu.netWinner);
 	        	victoire.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
 	        	victoire.setX(22*MULTI);
 	        	victoire.setY(50*MULTI);
@@ -574,7 +1016,7 @@ public class ViewJeu extends Stage{
 	        				tscore.setX(250*MULTI);
 	        				tscore.setY((100+number*50)*MULTI);
 	        				tscore.setFill(Color.WHITE);
-	        	        	root.getChildren().addAll(id, tf, tscore);
+	        				if(!jeu.isClient()) root.getChildren().addAll(id, tf, tscore);
 	        			}else {
 	        				Text id = new Text(number+" "+s+" : ");
 	        				id.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
@@ -583,24 +1025,22 @@ public class ViewJeu extends Stage{
 	        				id.setFill(Color.WHITE);
 	        	        	
 	        	        	TextDisplay tscore = new TextDisplay(22*MULTI, 250*MULTI, (100+number*50)*MULTI, sorted.get(s)+"");
-	        	        	root.getChildren().addAll(id, tscore);
+	        	        	if(!jeu.isClient()) root.getChildren().addAll(id, tscore);
 	        			}
 	        			number++;
 	        		} else break;
 	        	}
-	        	root.getChildren().addAll(victoire, scorePacMan);
-	        	final Timeline timelinerestart = new Timeline(
-	        	 	    new KeyFrame(
-	        	 	        Duration.seconds(5),
-	        	 	        event -> {
-	        	 	        	//this.jeu = new Jeu();
-	        	 	        	root.getChildren().clear();
-	        	 	        	start();
-	        	 	        	timeline.stop();
-	        	 	        })
-	        	 	    );
-	        	//timelinerestart.play();
-	        	jeu.gums.clear();
+	        	
+	        	if(!jeu.isClient()) {
+	        		if(!root.getChildren().contains(tf)) {
+	        			TextDisplay id = new TextDisplay(22*MULTI, 22*MULTI, (100+(number+1)*50)*MULTI, "# ");
+	        			tf.setTranslateX(60*MULTI);
+        				tf.setTranslateY((100+(number+1)*50-20)*MULTI);
+        				root.getChildren().addAll(id, tf);
+	        		}
+	        		root.getChildren().addAll(victoire, scorePacMan);
+	        	}
+	        	//jeu.gums.clear();
 	}
 	private void renderPlayer() {
 		//Mise a jour de la position du joueur
@@ -612,15 +1052,19 @@ public class ViewJeu extends Stage{
 		Platform.runLater(new Runnable(){
 			@Override
 			public void run() {
-				root.getChildren().remove(pinky);
-				pinky = new Circle(jeu.pinky.y*jeu.pinky.size*MULTI, jeu.pinky.x*jeu.pinky.size*MULTI, jeu.pinky.rayon*MULTI);
-				pinky.setFill(Color.DEEPPINK);
-				root.getChildren().add(pinky);
+				//root.getChildren().remove(pinky);
+				//pinky = new Circle(jeu.pinky.y*jeu.pinky.size*MULTI, jeu.pinky.x*jeu.pinky.size*MULTI, jeu.pinky.rayon*MULTI);
+				//pinky.setFill(Color.DEEPPINK);
+				pinky.setCenterX(jeu.pinky.y*jeu.pinky.size*MULTI);
+				pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
+				//root.getChildren().add(pinky);
 
-				root.getChildren().remove(blinky);
-				blinky = new Circle(jeu.blinky.y*jeu.blinky.size*MULTI, jeu.blinky.x*jeu.blinky.size*MULTI, jeu.blinky.rayon*MULTI);
-				blinky.setFill(Color.RED);
-				root.getChildren().add(blinky);
+				//root.getChildren().remove(blinky);
+				//blinky = new Circle(jeu.blinky.y*jeu.blinky.size*MULTI, jeu.blinky.x*jeu.blinky.size*MULTI, jeu.blinky.rayon*MULTI);
+				//blinky.setFill(Color.RED);
+				blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
+				blinky.setCenterY(jeu.blinky.x*jeu.blinky.size*MULTI);
+				//root.getChildren().add(blinky);
 			}
 		});
 	}
@@ -629,7 +1073,7 @@ public class ViewJeu extends Stage{
 		blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
 		blinky.setCenterY(jeu.blinky.x*jeu.blinky.size*MULTI);
 		if(jeu.multiplayer == Muliplayer.SERVER) {
-			Net.sendData("5/"+jeu.blinky.x+";"+jeu.blinky.y);
+			Net.sendData("5/"+jeu.blinky.x+";"+jeu.blinky.y+";"+jeu.blinkyDir);
 		}
 	}
 	
@@ -668,7 +1112,7 @@ public class ViewJeu extends Stage{
 	    	 	        	if(cooldown > 0) {
 	    	 	        		cooldown--;
 	    	 	        	}else {
-	    	 	        		//jeu.blinky.start();
+	    	 	        		jeu.blinky.start();
 	    	 	        		if(jeu.isSolo()) jeu.pinky.start();
 	    	 	        		timelineDeplacements.play();
 	    	 	        		root.getChildren().remove(startCoolDown);
@@ -686,8 +1130,7 @@ public class ViewJeu extends Stage{
 	static HashMap<String, Integer> scores = new HashMap<String, Integer>();
 	@SuppressWarnings("unchecked")
 	private void loadScores() {
-		try
-        {
+		try {
             FileInputStream fis = new FileInputStream("Scores");
             ObjectInputStream ois = new ObjectInputStream(fis);
  
@@ -700,41 +1143,35 @@ public class ViewJeu extends Stage{
             scores.forEach((k, v)->System.out.println(k+""+v));
             ois.close();
             fis.close();
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             ioe.printStackTrace();
-        }
-        catch (ClassNotFoundException c)
-        {
+        } catch (ClassNotFoundException c) {
             System.out.println("Class not found");
             c.printStackTrace();  
         }
 	}
 	HashMap<String, HashMap<String, Integer>> scoresperMap = new HashMap<>();
 	private void saveScore() {
-		try
-        {
+		try {
             FileOutputStream fos = new FileOutputStream("Scores");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(scoresperMap);
             oos.close();
             fos.close();
-        }
-        catch (IOException ioe)
-        {
+        }catch (IOException ioe){
             ioe.printStackTrace();
         }
 	}
 	
 	private void validationScore() {
-		scores.remove("<SYSNON>");
-		if(!tf.getText().isEmpty()) {
-			scores.put(tf.getText(), jeu.score);
-			
+		if(!jeu.isClient()) {
+			scores.remove("<SYSNON>");
+			if(!tf.getText().isEmpty()) {
+				scores.put(tf.getText(), jeu.score);	
+			}
+			scoresperMap.put(jeu.level.getName(), scores);
+			saveScore();
 		}
-		scoresperMap.put(jeu.level.getName(), scores);
-		saveScore();
 		this.close();
 		Main.menu = new Menu();
 	}

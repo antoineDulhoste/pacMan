@@ -50,7 +50,7 @@ public class Net {
 	}
 	static Level level = null;
 	public static boolean already = false;
-	public static void startServer(int port) {
+	public static void startServer(int port, Level levelArg) {
 		if(already) return;
 		try {
 			System.out.println("Starting Server ...");
@@ -58,36 +58,54 @@ public class Net {
 			System.out.println("Server Started\nWaiting for level ...");
 			
 			/** Ask for Level **/
-			Platform.runLater(new Runnable() {
-				
-				@Override
-				public void run() {
-					try {
-						ChoiceDialog<Level> dialog = new ChoiceDialog<>(Level.levels.get(0), Level.levels);
-						dialog.setTitle("Choisir un niveau");
-						dialog.setHeaderText("Look, a Choice Dialog");
-						dialog.setContentText("Choose your letter:");
+			if(levelArg == null) {
+				Platform.runLater(new Runnable() {
+					
+					@Override
+					public void run() {
+						try {
+							ChoiceDialog<Level> dialog = new ChoiceDialog<>(Level.levels.get(0), Level.levels);
+							dialog.setTitle("Choisir un niveau");
+							dialog.setHeaderText("Look, a Choice Dialog");
+							dialog.setContentText("Choose your letter:");
 
-						// Traditional way to get the response value.
-						Optional<Level> result = dialog.showAndWait();
-						if (result.isPresent()){
-							level = result.get();
-						    System.out.println("Level ("+level.getName()+") OK");
-						    System.out.println("Waiting for connection ...");
-						    socket = serverSocket.accept();
-							System.out.println("Connection from: "+ socket.getInetAddress());
-							
-							dis = new DataInputStream(socket.getInputStream());	
-							if (dis != null && level != null) {
-								System.out.println("Server started\nClient connected\nSending game infos");
-								new Jeu(Muliplayer.SERVER, level);
-							}
+							// Traditional way to get the response value.
+							Optional<Level> result = dialog.showAndWait();
+							if (result.isPresent()){
+								level = result.get();
+							    System.out.println("Level ("+level.getName()+") OK");
+							    System.out.println("Waiting for connection ...");
+							    socket = serverSocket.accept();
+								System.out.println("Connection from: "+ socket.getInetAddress());
+								
+								dis = new DataInputStream(socket.getInputStream());	
+								if (dis != null && level != null) {
+									System.out.println("Server started\nClient connected\nSending game infos");
+									new Jeu(Muliplayer.SERVER, level);
+								}
+							}	
+						}catch (Exception ex) {
+							ex.printStackTrace();
 						}	
-					}catch (Exception ex) {
-						ex.printStackTrace();
-					}	
+					}
+				});
+			}else {
+				try {
+				    System.out.println("Level ("+levelArg.getName()+") OK");
+				    System.out.println("Waiting for connection ...");
+				    socket = serverSocket.accept();
+					System.out.println("Connection from: "+ socket.getInetAddress());
+					
+					dis = new DataInputStream(socket.getInputStream());	
+					if (dis != null && levelArg != null) {
+						System.out.println("Server started\nClient connected\nSending game infos");
+						new Jeu(Muliplayer.SERVER, levelArg);
+					}
+				}catch(Exception ex) {
+					ex.printStackTrace();
 				}
-			});
+			}
+			
 			
 		}catch(Exception ex) {
 			ex.printStackTrace();

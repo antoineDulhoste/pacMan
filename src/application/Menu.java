@@ -2,8 +2,6 @@ package application;
 
 
 import java.io.File;
-import java.util.Optional;
-
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -12,9 +10,9 @@ import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -147,26 +145,9 @@ public class Menu extends Stage {
         t1.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-            	close();
-            	try {
-            		Level level;
-            		ChoiceDialog<Level> dialog = new ChoiceDialog<>(Level.levels.get(0), Level.levels);
-					dialog.setTitle("Choisir un niveau");
-					dialog.setHeaderText("Look, a Choice Dialog");
-					dialog.setContentText("Choose your letter:");
-
-					// Traditional way to get the response value.
-					Optional<Level> result = dialog.showAndWait();
-					if (result.isPresent()){
-						level = result.get();
-					    System.out.println("Level ("+level.getName()+") OK");
-					    Jeu jeu = new Jeu(Muliplayer.SOLO, level);
-					}
-        		} catch(Exception e) {
-        			e.printStackTrace();
-        		}
-            	
-            	
+            	setCompteur(4);
+            	menuRemove(4);
+            	soloChooseLevel();
             }
         });
         root.getChildren().add(t1);
@@ -199,7 +180,7 @@ public class Menu extends Stage {
             @Override
             public void handle(MouseEvent event) {
             	close();
-            	new Editeur(20, 20, "Yolo 2");
+            	new Editeur(20, 20);
             }
         });
         root.getChildren().add(t3);
@@ -229,7 +210,8 @@ public class Menu extends Stage {
         t1.setFill(Color.WHITE);
         root.getChildren().add(t1);
         
-        TextField port = new TextField ();
+        TextField port = new TextField ("7778");
+        port.setTextFormatter(new TextFormatter<>(Tools.FILTER));
         port.setLayoutX(285);
         port.setLayoutY(460);
         port.setStyle("-fx-text-fill: white; -fx-background-color: black; -fx-border-color:white; -fx-border-radius:5px; -fx-font-family:'Comic Sans MS';-fx-font-size:20");
@@ -259,7 +241,17 @@ public class Menu extends Stage {
             @Override
             public void handle(MouseEvent event) {
             	System.out.println("PACMAN SERVER:\nPORT: "+Integer.parseInt(port.getText())+"\nLEVEL: "+levels.getValue().getName());
-            	Net.startServer(Integer.parseInt(port.getText()));
+            	setCompteur(99);
+            	t3.setText("Waiting for connection");
+            	t3.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,40));
+            	new Thread(new Runnable() {
+					
+					@Override
+					public void run() {
+						Net.startServer(Integer.parseInt(port.getText()), levels.getValue());
+					}
+				}).start();
+            	setCompteur(99);
             }
         });
         root.getChildren().add(t3);
@@ -274,7 +266,7 @@ public class Menu extends Stage {
         t1.setFill(Color.WHITE);
         root.getChildren().add(t1);
         
-        TextField ip = new TextField ();
+        TextField ip = new TextField ("localhost");
         ip.setLayoutX(285);
         ip.setLayoutY(460);
         ip.setStyle("-fx-text-fill: white; -fx-background-color: black; -fx-border-color:white; -fx-border-radius:5px; -fx-font-family:'Comic Sans MS';-fx-font-size:20");
@@ -288,7 +280,8 @@ public class Menu extends Stage {
         t2.setFill(Color.WHITE);
         root.getChildren().add(t2);
         
-        TextField port = new TextField ();
+        TextField port = new TextField ("7778");
+        port.setTextFormatter(new TextFormatter<>(Tools.FILTER));
         port.setLayoutX(285);
         port.setLayoutY(530);
         port.setStyle("-fx-text-fill: white; -fx-background-color: black; -fx-border-color:white; -fx-border-radius:5px; -fx-font-family:'Comic Sans MS';-fx-font-size:20");
@@ -305,7 +298,37 @@ public class Menu extends Stage {
             @Override
             public void handle(MouseEvent event) {
             	System.out.println("Start PacMan MULTI: CLIENT");
-            	Net.joinServer(ip.getText(), 7778);
+            	Net.joinServer(ip.getText(), Integer.parseInt(port.getText()));
+            }
+        });
+        root.getChildren().add(t3);
+	}
+	
+	public void soloChooseLevel() {
+		Text t2 = new Text();
+        t2.setText("CARTE:");
+        t2.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
+        t2.setX(100);
+        t2.setY(570);
+        t2.setFill(Color.WHITE);
+        root.getChildren().add(t2);
+        
+        ComboBox<Level> levels = new ComboBox<>(FXCollections.observableArrayList(Level.levels));
+        levels.setLayoutX(285);
+        levels.setLayoutY(530);      
+        levels.setStyle("-fx-text-fill: white; -fx-background-color: black; -fx-border-color:white; -fx-border-radius:5px; -fx-font-family:'Comic Sans MS';-fx-font-size:20");
+        root.getChildren().add(levels);
+        
+        Text t3 = new Text();
+        t3.setText("Valider");
+        t3.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
+        t3.setX(130);
+        t3.setY(650);
+        t3.setFill(Color.WHITE);
+        t3.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+            	new Jeu(Muliplayer.SOLO, levels.getValue());
             }
         });
         root.getChildren().add(t3);

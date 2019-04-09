@@ -147,7 +147,7 @@ public class Level implements Serializable{
 						  { 8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8}
 				 };	
 			Level lvl = new Level("Defaut", map, 15, 10, 1, 7, 14, 2);
-			levels.add(lvl);
+			if(levels.isEmpty()) levels.add(lvl);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import java.util.TimerTask;
 import PathFinding.PathMap;
 import javafx.application.Platform;
 import javafx.scene.shape.Circle;
+import sun.java2d.loops.BlitBg;
 
 public class Jeu extends Observable{
 	
@@ -23,9 +24,14 @@ public class Jeu extends Observable{
 	Muliplayer multiplayer;
 	public PathMap pathMap;
 	
+	public int netDir = 0;
+	public int blinkyDir = 0;
+	public String netWinner;
 	public boolean over = false;
 	private boolean ready = false;
 	private boolean started = false;
+	
+	public TypeVictoires victoire;
 	
 	public Jeu(Muliplayer multiplayer, Level level) {
 		this.multiplayer = multiplayer;
@@ -63,6 +69,21 @@ public class Jeu extends Observable{
 		}
 	}
 	public void moveBlinky(Double x, Double y) {
+		if(blinky.x - x > 0) {
+			System.out.println("UP");
+			blinkyDir = 4;
+		}else if(blinky.x - x < 0) {
+			System.out.println("DOWN");
+			blinkyDir = 2;
+		}else if(blinky.y - y > 0) {
+			System.out.println("LEFT");
+			blinkyDir = 1;
+		}else if(blinky.y - y < 0) {
+			System.out.println("RIGHT");
+			blinkyDir = 3;
+		}else {
+			blinkyDir = 0;
+		}
 		this.blinky.x = x;
 		this.blinky.y = y;
 		setChanged();
@@ -170,25 +191,6 @@ public class Jeu extends Observable{
 		}
 	}
 	
-	/* MULTIPLAYER */
-	/*
-	 * Server = PacMan;
-	 * Client = Ghost;
-	 * 
-	 * Packet 0 : Wait
-	 * Packet 1 : Start
-	 * Packet 2 : End (Gagnant + Score PacMan)
-	 * Packet 3 : Move
-	 * Packet 4 : Exit
-	 * 
-	 * Packet Server: 
-	 * 	- Player X
-	 * 	- Player Y
-	 * 
-	 * Packet Client:
-	 *  - Ghost X
-	 *  - Ghost Y
-	 */
 	public void ServerReceiveData(String str) {
 		String[] list = str.split(";");
 		pinky.x = Double.parseDouble(list[0]);
@@ -198,11 +200,11 @@ public class Jeu extends Observable{
 	}
 	
 	public String ServerSendData() {
-		return player.x+";"+player.y;
+		return player.x+";"+player.y+";"+player.dir;
 	}
 	
 	public String ClientSendData() {
-		return player.x+";"+player.y;
+		return player.x+";"+player.y+";"+player.dir;
 	}
 	
 	private void startGameServer() {
@@ -228,6 +230,11 @@ public class Jeu extends Observable{
 							System.out.println("Packet 2 ignored");
 						} else if( packet.equalsIgnoreCase("3") ) {
 							System.out.println("Client end game. Winner : "+packet);
+							if(str.split("/")[1].equals("PACMAN")) {
+								victoire = TypeVictoires.PACMAN;
+							}else {
+								victoire = TypeVictoires.GHOST;
+							}
 							started = false;
 							setChanged();
 							notifyObservers("GAMEOVER");
@@ -235,6 +242,7 @@ public class Jeu extends Observable{
 							String[] list = str.split("/")[1].split(";");
 							pinky.x = Double.parseDouble(list[0]);
 							pinky.y = Double.parseDouble(list[1]);
+							netDir = Integer.parseInt(list[2]);
 							setChanged();
 							notifyObservers("RENDEROTHER");
 						}
@@ -278,20 +286,25 @@ public class Jeu extends Observable{
 							}
 							retry = false;
 						} else if( packet.equalsIgnoreCase("3") ) {
-							System.out.println("Serv end game. Winner : "+packet);
-							started = false;
+							if(str.split("/")[1].equals("PACMAN")) {
+								victoire = TypeVictoires.PACMAN;
+							}else {
+								victoire = TypeVictoires.GHOST;
+							}
 							setChanged();
 							notifyObservers("GAMEOVER");
 						} else if( packet.equalsIgnoreCase("4") ) {
 							String[] list = str.split("/")[1].split(";");
 							pinky.x = Double.parseDouble(list[0]);
 							pinky.y = Double.parseDouble(list[1]);
+							netDir = Integer.parseInt(list[2]);
 							setChanged();
 							notifyObservers("RENDEROTHER");
 						} else if( packet.equalsIgnoreCase("5") ) {
 							String[] list = str.split("/")[1].split(";");
 							blinky.x = Double.parseDouble(list[0]);
 							blinky.y = Double.parseDouble(list[1]);
+							blinkyDir = Integer.parseInt(list[2]);
 							setChanged();
 							notifyObservers("RENDEROTHER");
 						}

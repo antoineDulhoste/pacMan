@@ -1,7 +1,5 @@
 package application;
 
-import java.util.TimerTask;
-
 public abstract class Entite{
 	
 	public Double x, y;
