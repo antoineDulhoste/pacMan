@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Level implements Serializable{
-	
+
 	public static ArrayList<Level> levels = new ArrayList<>();
 	
 	private String name;
@@ -104,6 +104,7 @@ public class Level implements Serializable{
             ioe.printStackTrace();
         }
 	}
+	@SuppressWarnings("unchecked")
 	public static void loadLevels() {
 		 try
 	        {

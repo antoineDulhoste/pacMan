@@ -23,7 +23,6 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
@@ -221,7 +220,7 @@ public class ViewJeu extends Stage{
 		
 		/*Dessine le joueur*/
 		player = new Circle(jeu.player.y*jeu.player.size*MULTI, jeu.player.x*jeu.player.size*MULTI, jeu.player.rayon*MULTI);
-		//player.setFill(Color.YELLOW);
+		/* On initialise les sprites des elements */
 		root.getChildren().add(player);
 		if(jeu.isServer() || jeu.isSolo()) {
         	player.setFill(new ImagePattern(PMR1));
@@ -563,9 +562,7 @@ public class ViewJeu extends Stage{
         	);
         timelineSpriteAnimation.setCycleCount( Animation.INDEFINITE );
         timelineSpriteAnimation.play();
-        
-		
-        
+
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
@@ -577,7 +574,7 @@ public class ViewJeu extends Stage{
                     case ENTER: if(!gameover) {	
 			                    	if(jeu.isServer()) {
 			            				Net.sendData("3/GHOST");
-			            			} else if(jeu.multiplayer == Muliplayer.CLIENT) {
+			            			} else if(jeu.isClient()) {
 			            				Net.sendData("3/PACMAN");
 			            			} else if(jeu.isSolo()) jeu.victoire = TypeVictoires.GHOST;
 			                    	GameOver(); 
@@ -760,7 +757,7 @@ public class ViewJeu extends Stage{
 	        	    )
 	        	);
 		timelineGameOver.setCycleCount( Animation.INDEFINITE );
-		if(jeu.multiplayer != Muliplayer.CLIENT) timelineGameOver.play();
+		if(!jeu.isClient()) timelineGameOver.play();
 		
 		this.setTitle("PacMan");
 		this.setScene(scene);
@@ -1042,46 +1039,24 @@ public class ViewJeu extends Stage{
 	        	}
 	        	//jeu.gums.clear();
 	}
+	
+	
+	
+
+	/** Mise a jour (graphiques) **/
+	
+	/*
+	 * Met a jour la position du joueur
+	 */
 	private void renderPlayer() {
 		//Mise a jour de la position du joueur
 		player.setCenterX(jeu.player.y*jeu.player.size*MULTI);
 		player.setCenterY(jeu.player.x*jeu.player.size*MULTI);
 	}
 	
-	private void renderOtherNET() {
-		Platform.runLater(new Runnable(){
-			@Override
-			public void run() {
-				//root.getChildren().remove(pinky);
-				//pinky = new Circle(jeu.pinky.y*jeu.pinky.size*MULTI, jeu.pinky.x*jeu.pinky.size*MULTI, jeu.pinky.rayon*MULTI);
-				//pinky.setFill(Color.DEEPPINK);
-				pinky.setCenterX(jeu.pinky.y*jeu.pinky.size*MULTI);
-				pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
-				//root.getChildren().add(pinky);
-
-				//root.getChildren().remove(blinky);
-				//blinky = new Circle(jeu.blinky.y*jeu.blinky.size*MULTI, jeu.blinky.x*jeu.blinky.size*MULTI, jeu.blinky.rayon*MULTI);
-				//blinky.setFill(Color.RED);
-				blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
-				blinky.setCenterY(jeu.blinky.x*jeu.blinky.size*MULTI);
-				//root.getChildren().add(blinky);
-			}
-		});
-	}
-	
-	private void renderBlinky() {
-		blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
-		blinky.setCenterY(jeu.blinky.x*jeu.blinky.size*MULTI);
-		if(jeu.multiplayer == Muliplayer.SERVER) {
-			Net.sendData("5/"+jeu.blinky.x+";"+jeu.blinky.y+";"+jeu.blinkyDir);
-		}
-	}
-	
-	private void renderPinky() {
-		pinky.setCenterX(jeu.pinky.y*jeu.pinky.size*MULTI);
-		pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
-	}
-	
+	/*
+	 * Met a jour la position des fantomes (Solo ou Serveur)
+	 */
 	private void renderGhost() {
 		//Mise a jour de la position de blinky
 		blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
@@ -1090,20 +1065,54 @@ public class ViewJeu extends Stage{
 		pinky.setCenterX(jeu.pinky.y*jeu.pinky.size*MULTI);
 		pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
 	}
-	/* Methodes lié au Reseaux */
-	public void NETStartGame() {
- 		timelineDeplacements.play();
- 		Platform.runLater(new Runnable() {
+	
+	/*
+	 * Met a jour la position de pinky (Solo ou Serveur)
+	 */
+	private void renderPinky() {
+		pinky.setCenterX(jeu.pinky.y*jeu.pinky.size*MULTI);
+		pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
+	}
+	
+	/*
+	 * Met a jour la position de Blinky 
+	 * - Si Serveur informe le client de la position de Blinky
+	 */
+	private void renderBlinky() {
+		blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
+		blinky.setCenterY(jeu.blinky.x*jeu.blinky.size*MULTI);
+		if(jeu.isServer()) {
+			Net.sendData("5/"+jeu.blinky.x+";"+jeu.blinky.y+";"+jeu.blinkyDir);
+		}
+	}
+	
+	/*
+	 * Met a jour la position du joueur et de blinky pour le client (Online)
+	 */
+	private void renderOtherNET() {
+		/* On execute des fonctions graphiques il faut donc un Thread spécifique*/
+		Platform.runLater(new Runnable(){
 			@Override
 			public void run() {
-				root.getChildren().remove(startCoolDown);
+
+				pinky.setCenterX(jeu.pinky.y*jeu.pinky.size*MULTI);
+				pinky.setCenterY(jeu.pinky.x*jeu.pinky.size*MULTI);
+				
+				blinky.setCenterX(jeu.blinky.y*jeu.blinky.size*MULTI);
+				blinky.setCenterY(jeu.blinky.x*jeu.blinky.size*MULTI);
 			}
 		});
 	}
 	
+	/** Mise a jour (graphiques) (end) **/
+	
+	/** START GAME **/
 	private Timeline timelineStartGame;
 	private int cooldown = 4;
 	private Text startCoolDown = new Text(cooldown+"");
+	/*
+	 * Démarre la partie pour si Client ou Serveur
+	 */
 	private void startGame() {
 		timelineStartGame = new Timeline(
 		 	    new KeyFrame(
@@ -1125,6 +1134,20 @@ public class ViewJeu extends Stage{
 		timelineStartGame.setCycleCount(cooldown+1);
 		timelineStartGame.play();
 	}
+	
+	/*
+	 * Démarre la partie pour un client apres confirmation du serveur
+	 */
+	public void NETStartGame() {
+ 		timelineDeplacements.play();
+ 		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				root.getChildren().remove(startCoolDown);
+			}
+		});
+	}
+	/** START GAME (end)**/
 	
 	/** Gestions scores **/
 	static HashMap<String, Integer> scores = new HashMap<String, Integer>();

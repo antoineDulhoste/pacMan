@@ -9,8 +9,6 @@ import java.util.TimerTask;
 
 import PathFinding.PathMap;
 import javafx.application.Platform;
-import javafx.scene.shape.Circle;
-import sun.java2d.loops.BlitBg;
 
 public class Jeu extends Observable{
 	
@@ -21,15 +19,13 @@ public class Jeu extends Observable{
 	public Pinky pinky;
 	
 	public int score = 0;
-	Muliplayer multiplayer;
+	private Muliplayer multiplayer;
 	public PathMap pathMap;
 	
 	public int netDir = 0;
 	public int blinkyDir = 0;
 	public String netWinner;
 	public boolean over = false;
-	private boolean ready = false;
-	private boolean started = false;
 	
 	public TypeVictoires victoire;
 	
@@ -235,7 +231,6 @@ public class Jeu extends Observable{
 							}else {
 								victoire = TypeVictoires.GHOST;
 							}
-							started = false;
 							setChanged();
 							notifyObservers("GAMEOVER");
 						} else if( packet.equalsIgnoreCase("4") ) {
@@ -282,7 +277,6 @@ public class Jeu extends Observable{
 								System.out.println("Game start");
 								setChanged();
 								notifyObservers("CLIENTSTART");
-								started = true;
 							}
 							retry = false;
 						} else if( packet.equalsIgnoreCase("3") ) {
