@@ -175,11 +175,9 @@ public class Jeu extends Observable{
 	}
 	
 	public void teleport(int id, int x, int y) {
-		System.out.println("TELEPORT EXCEPT "+x+" "+y);
 		for(int i=0; i<level.map.length; i++) {
 			for(int j=0; j<level.map[i].length; j++) {
 				if(level.map[i][j] == id && (i != x || j != y)) {
-					System.out.println("find "+i+" "+j);
 					player.x = i+0.5;
 					player.y = j+0.5;
 				}

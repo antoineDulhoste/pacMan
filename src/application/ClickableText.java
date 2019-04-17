@@ -11,7 +11,9 @@ public class ClickableText extends Text{
 	
 	public static ArrayList<ClickableText> texts = new ArrayList<>();
 	
+	@SuppressWarnings("unused")
 	private int value;
+	@SuppressWarnings("unused")
 	private Editeur edit;
 	
 	public ClickableText(String text, int value, Editeur edit) {

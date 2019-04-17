@@ -1,7 +1,5 @@
 package application;
 
-
-import java.io.File;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -58,13 +56,12 @@ public class Menu extends Stage {
         		+ "  to START");
         t1.setEffect(null);
         t1.setOpacity(1);
-        //time qui permet de faire clignoter le press to start
+        //timeline qui permet de faire clignoter le press to start
         timeline = new Timeline(new KeyFrame(
         		Duration.millis(500), 
         		event-> {
         			if (t1.getOpacity()==1) {
-        				t1.setOpacity(0);
-        				
+        				t1.setOpacity(0);	
         			} else {
         				t1.setOpacity(1);
         			}
@@ -81,13 +78,13 @@ public class Menu extends Stage {
 	
 	private void start() {
 		scene = new Scene(root, 600, 750, Color.BLACK);
-		String imageURI = new File("icone.png").toURI().toString(); 
-        Image image = new Image(imageURI);
+        Image image = new Image("Sprites/icone.png");
         ImageView imageView = new ImageView(image);
         root.getChildren().add(imageView);
         t1();
-        //ajout de la detection de la touche entree
+        //ajout de la detection de la touche ENTER
         scene.addEventFilter(KeyEvent.KEY_PRESSED,new ActionEntree(this));
+        //ajout de la detection de la touche ECHAP
         scene.addEventFilter(KeyEvent.KEY_PRESSED,new ActionEchap(this));
         this.getIcons().add(image);
 		this.setTitle("PacMan");
@@ -106,9 +103,7 @@ public class Menu extends Stage {
         t1.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-            	//System.out.println("Start PacMan MULTI: SERVER");
-            	//Net.startServer(7778);
-            	compteur = 3;
+            	setCompteur(3);
             	menuRemove(2);
             	menuConfigServer();
             }
@@ -125,7 +120,7 @@ public class Menu extends Stage {
         t2.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-            	compteur=3;
+            	setCompteur(3);
             	menuRemove(2);
             	actionConnect();
             }
@@ -133,7 +128,9 @@ public class Menu extends Stage {
         root.getChildren().add(t2);
 	}
 	
-	 //ajoute les boutons solo,multi,quitter
+	/**
+	 * Créer le menu principal avec les boutons "solo", "multi", "editor", "exit"
+	 */
 	public void menu1() {
     	Text t1 = new Text();
         t1.setText("solo");
@@ -201,6 +198,9 @@ public class Menu extends Stage {
         root.getChildren().add(t4);
     }
 	
+	/**
+	 * Créer le menu pour configurer le serveur
+	 */
 	public void menuConfigServer() {
 		Text t1 = new Text();
         t1.setText("PORT:");
@@ -257,6 +257,9 @@ public class Menu extends Stage {
         root.getChildren().add(t3);
 	}
 
+	/**
+	 * Créer le menu pour se connecter à un serveur
+	 */
 	public void actionConnect() {
 		Text t1 = new Text();
         t1.setText("IP:");
@@ -304,6 +307,9 @@ public class Menu extends Stage {
         root.getChildren().add(t3);
 	}
 	
+	/**
+	 * Créer le menu pour choisir le niveau d'une partie solo et pour la lancer
+	 */
 	public void soloChooseLevel() {
 		Text t2 = new Text();
         t2.setText("CARTE:");

@@ -50,30 +50,6 @@ public class PathMap {
 		}
 	}
 	
-	public void printMap(List<Node> path) {
-		for (int x = 0; x < width; x++)
-		{
-			StringBuilder sb = new StringBuilder();
-			for (int y = 0; y < height; y++)
-			{
-				if (!nodes[x][y].isWalkable())
-				{
-					System.out.print(" #");
-				}
-				else if (path.contains(new Node(x, y, true)))
-				{
-					System.out.print(" @");
-				}
-				else
-				{
-					System.out.print("  ");
-				}
-			}
-			System.out.println(sb.toString());
-		}
-	}
-	
-	
 	public Node getNode(int x, int y)
 	{
 		if (x >= 0 && x < height && y >= 0 && y < width)

@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+@SuppressWarnings("serial")
 public class Level implements Serializable{
 
 	public static ArrayList<Level> levels = new ArrayList<>();

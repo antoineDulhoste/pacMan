@@ -240,6 +240,9 @@ public class ViewJeu extends Stage{
         }
         root.getChildren().add(pinky); 
         
+        /*
+         * Timeline pour les animations 
+         */
         timelineSpriteAnimation = new Timeline(
         	    new KeyFrame(
         	        Duration.millis( 100 ),
@@ -563,6 +566,9 @@ public class ViewJeu extends Stage{
         timelineSpriteAnimation.setCycleCount( Animation.INDEFINITE );
         timelineSpriteAnimation.play();
 
+        /*
+         * On ecoute les inputs du clavier
+         */
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
@@ -586,6 +592,15 @@ public class ViewJeu extends Stage{
             }
         });
         
+        /* Thread concernant la musique */
+        try {
+        	TMusique.start();
+        }catch(Exception ex) {
+        	ex.printStackTrace();
+        }
+        /*
+         * Utilisation de la molette pour modifier le volume
+         */
         scene.setOnScroll((ScrollEvent event) -> {
             double deltaY = event.getDeltaY();
             if(deltaY < 0) {
@@ -595,7 +610,10 @@ public class ViewJeu extends Stage{
             } 
         });
         
-        /* Thread */
+        /*
+         * Thread qui gère les collisions avec les gums et delanche la victoire si
+         * il n'y a plus de gum
+         */
         ATCoins = new AnimationTimer() {
             @Override public void handle(long currentNanoTime) {
             	/* On regarde les collisions de PacMan avec les Gums */
@@ -619,96 +637,101 @@ public class ViewJeu extends Stage{
         /* Si le joueur joue Pinky il ne doit pas rammaser les gums */
         if(!jeu.isClient()) ATCoins.start();
         
-        /* Thread concernant la musique */
-        try {
-        	TMusique.start();
-        }catch(Exception ex) {
-        	ex.printStackTrace();
-        }
         
-        	timelineDeplacements = new Timeline(
-            	    new KeyFrame(
-            	        Duration.millis( 2 ),
-            	        event -> {
-            	        	Double newX = 0.0;
-        	            	Double newY = 0.0;
-        	            	if (jeu.player.dirWanted == 4) {
-        	            		newX -= 0.01;
-        	                } else if (jeu.player.dirWanted == 2) {
-        	                	newX += 0.01;
-        	                } else if (jeu.player.dirWanted == 1) {
-        	                	newY -= 0.01;
-        	                } else if (jeu.player.dirWanted == 3) {
-        	                	newY += 0.01;
-        	                } else return;
-        	            	boolean moved = false;
-        	            	if(!newY.equals(0.0)) {
-        	            		if(jeu.canMoveVertically(newY)) {
-        	            			jeu.movePlayerY(newY);
-        	            			moved = true;
-        	            		}
-        	            	}    
-        	            	if(!newX.equals(0.0)) {
-        	            		if(jeu.canMoveHorizontally(newX)) {
-        	            			jeu.movePlayerX(newX);
-        	            			moved = true;
-        	            		}
-        	            	}
-        	            	if(moved) {
-        	            		jeu.player.dir = jeu.player.dirWanted;
-        	            	} else {
-        	            		newX = 0.0;
-        		            	newY = 0.0;
-        		            	if (jeu.player.dir == 4) {
-        		            		newX -= 0.01;
-        		                } else if (jeu.player.dir == 2) {
-        		                	newX += 0.01;
-        		                } else if (jeu.player.dir == 1) {
-        		                	newY -= 0.01;
-        		                } else if (jeu.player.dir == 3) {
-        		                	newY += 0.01;
-        		                } else return;
-        		            	moved = false;
-        		            	if(!newY.equals(0.0)) {
-        		            		if(jeu.canMoveVertically(newY)) {
-        		            			jeu.movePlayerY(newY);
-        		            			moved = true;
-        		            		}
-        		            	}    
-        		            	if(!newX.equals(0.0)) {
-        		            		if(jeu.canMoveHorizontally(newX)) {
-        		            			jeu.movePlayerX(newX);
-        		            			moved = true;
-        		            		}
-        		            	}
-        	            	}	
-            	        }
-            	    )
-            	);
-			scoreJeu.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22));
-			scoreJeu.setX(22);
-			scoreJeu.setY(22);
-			root.getChildren().add(scoreJeu);
-			scoreJeu.setFill(Color.WHITE);
-    		timelineDeplacements.setCycleCount( Animation.INDEFINITE );
+        
+        /*
+         * Thread qui s'occupe des déplacement
+         */
+    	timelineDeplacements = new Timeline(
+        	    new KeyFrame(
+        	        Duration.millis( 2 ),
+        	        event -> {
+        	        	Double newX = 0.0;
+    	            	Double newY = 0.0;
+    	            	if (jeu.player.dirWanted == 4) {
+    	            		newX -= 0.01;
+    	                } else if (jeu.player.dirWanted == 2) {
+    	                	newX += 0.01;
+    	                } else if (jeu.player.dirWanted == 1) {
+    	                	newY -= 0.01;
+    	                } else if (jeu.player.dirWanted == 3) {
+    	                	newY += 0.01;
+    	                } else return;
+    	            	boolean moved = false;
+    	            	if(!newY.equals(0.0)) {
+    	            		if(jeu.canMoveVertically(newY)) {
+    	            			jeu.movePlayerY(newY);
+    	            			moved = true;
+    	            		}
+    	            	}    
+    	            	if(!newX.equals(0.0)) {
+    	            		if(jeu.canMoveHorizontally(newX)) {
+    	            			jeu.movePlayerX(newX);
+    	            			moved = true;
+    	            		}
+    	            	}
+    	            	if(moved) {
+    	            		jeu.player.dir = jeu.player.dirWanted;
+    	            	} else {
+    	            		newX = 0.0;
+    		            	newY = 0.0;
+    		            	if (jeu.player.dir == 4) {
+    		            		newX -= 0.01;
+    		                } else if (jeu.player.dir == 2) {
+    		                	newX += 0.01;
+    		                } else if (jeu.player.dir == 1) {
+    		                	newY -= 0.01;
+    		                } else if (jeu.player.dir == 3) {
+    		                	newY += 0.01;
+    		                } else return;
+    		            	moved = false;
+    		            	if(!newY.equals(0.0)) {
+    		            		if(jeu.canMoveVertically(newY)) {
+    		            			jeu.movePlayerY(newY);
+    		            			moved = true;
+    		            		}
+    		            	}    
+    		            	if(!newX.equals(0.0)) {
+    		            		if(jeu.canMoveHorizontally(newX)) {
+    		            			jeu.movePlayerX(newX);
+    		            			moved = true;
+    		            		}
+    		            	}
+    	            	}	
+        	        }
+        	    )
+        	);
+    	timelineDeplacements.setCycleCount( Animation.INDEFINITE );
+    	/*
+    	 * Ajout du compteur de points
+    	 */
+		scoreJeu.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22));
+		scoreJeu.setX(22);
+		scoreJeu.setY(22);
+		root.getChildren().add(scoreJeu);
+		scoreJeu.setFill(Color.WHITE);
+		
        
-    		/* Si le joueur joue Pinky on interverti les deux entites */
-    		if(jeu.isClient()) {
-    			double x = jeu.pinky.x;
-    			double y = jeu.pinky.y;
-    			
-    			jeu.pinky.x = jeu.player.x;
-    			jeu.pinky.y = jeu.player.y;
-    			
-    			jeu.player.x = x;
-    			jeu.player.y = y;
-    			
-    			pinky.setFill(new ImagePattern(PMU1));
-    			player.setFill(new ImagePattern(PinkyDown1));
-    			renderPlayer();
-    			renderGhost();
-    		}
+		/* Si le joueur joue Pinky on interverti les deux entites */
+		if(jeu.isClient()) {
+			double x = jeu.pinky.x;
+			double y = jeu.pinky.y;
+			
+			jeu.pinky.x = jeu.player.x;
+			jeu.pinky.y = jeu.player.y;
+			
+			jeu.player.x = x;
+			jeu.player.y = y;
+			
+			pinky.setFill(new ImagePattern(PMU1));
+			player.setFill(new ImagePattern(PinkyDown1));
+			renderPlayer();
+			renderGhost();
+		}
         
+		/*
+		 * Timeline pour l'animation de la couleur des murs
+		 */
 		wallAnimation = new Timeline(
 	        	    new KeyFrame(
 	        	        Duration.millis( 5 ),
@@ -724,6 +747,9 @@ public class ViewJeu extends Stage{
 		wallAnimation.setCycleCount( Animation.INDEFINITE );
 		wallAnimation.play();
 		
+		/*
+		 * Timeline qui verifie les collisions avec les fantomes
+		 */
 		timelineGameOver = new Timeline(
 	        	    new KeyFrame(
 	        	        Duration.millis( 20 ),
@@ -757,19 +783,19 @@ public class ViewJeu extends Stage{
 	        	    )
 	        	);
 		timelineGameOver.setCycleCount( Animation.INDEFINITE );
+		/* Les collisions sont gérées par le serveur */
 		if(!jeu.isClient()) timelineGameOver.play();
 		
-		this.setTitle("PacMan");
-		this.setScene(scene);
-		this.show();
 		
+		/*
+		 * Observer qui met a jour suivant l'objet passé en paramètre
+		 */
 		jeu.addObserver(new Observer() {
 			
 			@Override
 			public void update(Observable o, Object arg) {
 				boolean skip = false;
 				renderPlayer();
-				//renderGhost();
 				if( arg instanceof Gum ) {
 					Gum gum = (Gum) arg;
 					if ( root.getChildren().contains(gum)) {
@@ -830,9 +856,16 @@ public class ViewJeu extends Stage{
 		/* Pour equilibrer si le joueur joue Pinky il ne voit pas les gums restants */
 		if(!jeu.isClient()) addGums();
 		
+		/*
+		 * On change l'icone de la fenètre
+		 */
 		String imageURI = new File("icone.png").toURI().toString(); 
 		Image image = new Image(imageURI);
 		this.getIcons().add(image);
+		
+		/*
+		 * Si le joueur souhaite quitter la prtie en cours
+		 */
 		scene.addEventFilter(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
 			private boolean b=true;
 			@Override
@@ -845,6 +878,13 @@ public class ViewJeu extends Stage{
 			}
 		});
 		
+		this.setTitle("PacMan");
+		this.setScene(scene);
+		this.show();
+		
+		/*
+		 * Gestion du cooldown avant le debut de la partie
+		 */
 		root.getChildren().add(startCoolDown);
 		startCoolDown.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,50));
 		startCoolDown.setFill(Color.WHITE);
@@ -859,6 +899,9 @@ public class ViewJeu extends Stage{
 		}
 	}
 	
+	/*
+	 * Methode qui ajoute les Gum sur le plateau 
+	 */
 	private void addGums() {
 		for(int l = 0; l<jeu.level.map.length; l++) {
 			for (int c = 0; c<jeu.level.map[l].length; c++) {
@@ -870,12 +913,16 @@ public class ViewJeu extends Stage{
 		}
 	}
 	
+	/*
+	 * Arrète les threads pour quand il y a gameover
+	 */
 	private void stopAllThread() {
 		ATCoins.stop();
 		timelineGameOver.stop();
 		timelineDeplacements.stop();
 		timelineSpriteAnimation.stop();
 	}
+	
 	TextField tf = new TextField();
 	private void GameOver() {
 		 System.out.println(jeu.victoire);
@@ -912,10 +959,13 @@ public class ViewJeu extends Stage{
 	        	        }
 	        	    )
 	        	);
-	        timelineSpriteAnimation.setCycleCount( Animation.INDEFINITE );
-	        if(jeu.victoire == TypeVictoires.GHOST) {
-	        	timelineSpriteAnimation.play();
-	        }
+        timelineSpriteAnimation.setCycleCount( Animation.INDEFINITE );
+        if(jeu.victoire == TypeVictoires.GHOST) {
+        	timelineSpriteAnimation.play();
+        }
+        /*
+         * On fait sortir les entites de l'ecran
+         */
 		 final Timeline timeline = new Timeline(
 	        	    new KeyFrame(
 	        	        Duration.millis( 20 ),
@@ -962,82 +1012,86 @@ public class ViewJeu extends Stage{
 	        	        }
 	        	    )
 	        	);
-	        	timeline.setCycleCount( Animation.INDEFINITE );
-	        	timeline.play();
-	        	
-	        	/* Ajoute un texte */
-	        	loadScores();
-	        	scores.put("<SYSNON>", jeu.score);
-	        	System.out.println(scores.size());
-	        	HashMap<String, Integer> sorted = scores
-	        	        .entrySet()
-	        	        .stream()
-	        	        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-	        	        .collect(
-	        	            toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
-	        	                LinkedHashMap::new));
-	        	Text victoire;
-	        	System.err.println(jeu.gums.size());
-	        	if(jeu.gums.isEmpty()) {
-	        		victoire = new Text("Victoire de Pacman");
-	        	}else {
-	        		victoire = new Text("Victoire des Fantomes");
-	        	}
-	        	if(jeu.isClient()) victoire.setText("Victoire de "+jeu.netWinner);
-	        	victoire.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
-	        	victoire.setX(22*MULTI);
-	        	victoire.setY(50*MULTI);
-	        	victoire.setFill(Color.WHITE);
-	        	Text scorePacMan = new Text("Score : "+jeu.score);
-	        	scorePacMan.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
-	        	scorePacMan.setX(22*MULTI);
-	        	scorePacMan.setY(100*MULTI);
-	        	scorePacMan.setFill(Color.WHITE);
-	        	tf.setStyle("-fx-text-fill: white; -fx-background-color: black; -fx-border-color:white; -fx-border-radius:5px; -fx-font-family:'Comic Sans MS';-fx-font-size:20;");
-	        	int number = 1;
-	        	boolean deja = false;
-	        	for(String s : sorted.keySet()) {
-	        		if(number < 5) {
-	        			if(s.equals("<SYSNON>") && !deja) {
-	        				deja = true;
-	        				Text id = new Text(number+" ");
-	        				id.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
-	        				id.setX(22*MULTI);
-	        				id.setY((100+number*50)*MULTI);
-	        				id.setFill(Color.WHITE);
-	        				
-	        				tf.setTranslateX(60*MULTI);
-	        				tf.setTranslateY((100+number*50-20)*MULTI);
-	        				Text tscore = new Text(jeu.score+"");
-	        				tscore.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
-	        				tscore.setX(250*MULTI);
-	        				tscore.setY((100+number*50)*MULTI);
-	        				tscore.setFill(Color.WHITE);
-	        				if(!jeu.isClient()) root.getChildren().addAll(id, tf, tscore);
-	        			}else {
-	        				Text id = new Text(number+" "+s+" : ");
-	        				id.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
-	        				id.setX(22*MULTI);
-	        				id.setY((100+number*50)*MULTI);
-	        				id.setFill(Color.WHITE);
-	        	        	
-	        	        	TextDisplay tscore = new TextDisplay(22*MULTI, 250*MULTI, (100+number*50)*MULTI, sorted.get(s)+"");
-	        	        	if(!jeu.isClient()) root.getChildren().addAll(id, tscore);
-	        			}
-	        			number++;
-	        		} else break;
-	        	}
-	        	
-	        	if(!jeu.isClient()) {
-	        		if(!root.getChildren().contains(tf)) {
-	        			TextDisplay id = new TextDisplay(22*MULTI, 22*MULTI, (100+(number+1)*50)*MULTI, "# ");
-	        			tf.setTranslateX(60*MULTI);
-        				tf.setTranslateY((100+(number+1)*50-20)*MULTI);
-        				root.getChildren().addAll(id, tf);
-	        		}
-	        		root.getChildren().addAll(victoire, scorePacMan);
-	        	}
-	        	//jeu.gums.clear();
+        	timeline.setCycleCount( Animation.INDEFINITE );
+        	timeline.play();
+        	
+        	/* on charge les scores du niveau */
+        	loadScores();
+        	/* on ajoute une variable représentant le score actuel */
+        	scores.put("<SYSNON>", jeu.score);
+        	/* On trie les scores du plus haut au plus bas*/
+        	HashMap<String, Integer> sorted = scores
+        	        .entrySet()
+        	        .stream()
+        	        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+        	        .collect(
+        	            toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+        	                LinkedHashMap::new));
+        	Text victoire;
+        	if(jeu.gums.isEmpty()) {
+        		victoire = new Text("Victoire de Pacman");
+        	}else {
+        		victoire = new Text("Victoire des Fantomes");
+        	}
+        	if(jeu.isClient()) victoire.setText("Victoire de "+jeu.netWinner);
+        	victoire.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+        	victoire.setX(22*MULTI);
+        	victoire.setY(50*MULTI);
+        	victoire.setFill(Color.WHITE);
+        	Text scorePacMan = new Text("Score : "+jeu.score);
+        	scorePacMan.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+        	scorePacMan.setX(22*MULTI);
+        	scorePacMan.setY(100*MULTI);
+        	scorePacMan.setFill(Color.WHITE);
+        	tf.setStyle("-fx-text-fill: white; -fx-background-color: black; -fx-border-color:white; -fx-border-radius:5px; -fx-font-family:'Comic Sans MS';-fx-font-size:20;");
+        	int number = 1;
+        	boolean deja = false;
+        	/* On place le Textfield permettant la saisie du pseudo au bon endroit sinon il n'apparait pas
+        	 * il est tout de meme possible d'enregistrer un score qui n'est pas dans le top 4 en accédant u textfield via
+        	 * des tabulations et de valider avec ENTER comme si on voulais valider le score
+        	 */
+        	for(String s : sorted.keySet()) {
+        		if(number < 5) {
+        			/* Si c'est le score actuel on place le texfield*/
+        			if(s.equals("<SYSNON>") && !deja) {
+        				deja = true;
+        				Text id = new Text(number+" ");
+        				id.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+        				id.setX(22*MULTI);
+        				id.setY((100+number*50)*MULTI);
+        				id.setFill(Color.WHITE);
+        				
+        				tf.setTranslateX(60*MULTI);
+        				tf.setTranslateY((100+number*50-20)*MULTI);
+        				Text tscore = new Text(jeu.score+"");
+        				tscore.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+        				tscore.setX(250*MULTI);
+        				tscore.setY((100+number*50)*MULTI);
+        				tscore.setFill(Color.WHITE);
+        				if(!jeu.isClient()) root.getChildren().addAll(id, tf, tscore);
+        			}else {
+        				Text id = new Text(number+" "+s+" : ");
+        				id.setFont(Font.font ("Comic Sans MS",FontWeight.BOLD,22*MULTI));
+        				id.setX(22*MULTI);
+        				id.setY((100+number*50)*MULTI);
+        				id.setFill(Color.WHITE);
+        	        	
+        	        	TextDisplay tscore = new TextDisplay(22*MULTI, 250*MULTI, (100+number*50)*MULTI, sorted.get(s)+"");
+        	        	if(!jeu.isClient()) root.getChildren().addAll(id, tscore);
+        			}
+        			number++;
+        		} else break;
+        	}
+        	
+        	if(!jeu.isClient()) {
+        		if(!root.getChildren().contains(tf)) {
+        			TextDisplay id = new TextDisplay(22*MULTI, 22*MULTI, (100+(number+1)*50)*MULTI, "# ");
+        			tf.setTranslateX(60*MULTI);
+    				tf.setTranslateY((100+(number+1)*50-20)*MULTI);
+    				root.getChildren().addAll(id, tf);
+        		}
+        		root.getChildren().addAll(victoire, scorePacMan);
+        	}
 	}
 	
 	
@@ -1151,6 +1205,7 @@ public class ViewJeu extends Stage{
 	
 	/** Gestions scores **/
 	static HashMap<String, Integer> scores = new HashMap<String, Integer>();
+	HashMap<String, HashMap<String, Integer>> scoresperMap = new HashMap<>();
 	@SuppressWarnings("unchecked")
 	private void loadScores() {
 		try {
@@ -1173,7 +1228,7 @@ public class ViewJeu extends Stage{
             c.printStackTrace();  
         }
 	}
-	HashMap<String, HashMap<String, Integer>> scoresperMap = new HashMap<>();
+	
 	private void saveScore() {
 		try {
             FileOutputStream fos = new FileOutputStream("Scores");
@@ -1186,6 +1241,9 @@ public class ViewJeu extends Stage{
         }
 	}
 	
+	/*
+	 * Valide le pseudo entre par le joueur puis retourne au menu
+	 */
 	private void validationScore() {
 		if(!jeu.isClient()) {
 			scores.remove("<SYSNON>");
